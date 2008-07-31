@@ -35,7 +35,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * not support unsigned longs.
 	 */
 	public static Polynomial createFromLong( long l ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		int i = 0;
 		while ( l != 0 ) {
 			if ( ( l & 1 ) == 1 ) dgrs.add( BigInteger.valueOf( i ) );
@@ -53,7 +53,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * degree.
 	 */
 	public static Polynomial createFromBytes( byte[] bytes, long degree ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( int i = 0; i < degree; i++ ) {
 			int aidx = ( i / 8 ); // byte array index
 			int bidx = i % 8; // bit index
@@ -122,9 +122,9 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	/**
 	 * Construct a new polynomial from a collection of degrees
 	 */
-	protected Polynomial( Collection< BigInteger > degrees ) {
-		this();
-		this.degrees.addAll( degrees );
+	@SuppressWarnings("unchecked")
+	protected Polynomial( TreeSet< BigInteger > degrees ) {
+		this.degrees = (TreeSet< BigInteger >)degrees.clone();
 	}
 
 	/**
@@ -132,6 +132,14 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 */
 	protected static TreeSet< BigInteger > createDegreesCollection() {
 		return new TreeSet< BigInteger >( new ReverseComparator() );
+	}
+
+	/**
+	 * Factory for create the copy of current degrees collection.
+	 */
+	@SuppressWarnings("unchecked")
+	protected TreeSet< BigInteger > createDegreesCollectionCopy() {
+		return (TreeSet< BigInteger >) this.degrees.clone();
 	}
 
 	/**
@@ -167,7 +175,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Computes (this * that) in GF(2^k)
 	 */
 	public Polynomial multiply( Polynomial that ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( BigInteger pa : this.degrees ) {
 			for ( BigInteger pb : that.degrees ) {
 				BigInteger sum = pa.add( pb );
@@ -185,8 +193,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Computes (this & that) in GF(2^k)
 	 */
 	public Polynomial and( Polynomial that ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
-		dgrs.addAll( this.degrees );
+		TreeSet< BigInteger > dgrs = this.createDegreesCollectionCopy();
 		dgrs.retainAll( that.degrees );
 		return new Polynomial( dgrs );
 	}
@@ -195,8 +202,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Computes (this | that) in GF(2^k)
 	 */
 	public Polynomial or( Polynomial that ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
-		dgrs.addAll( this.degrees );
+		TreeSet< BigInteger > dgrs = this.createDegreesCollectionCopy();
 		dgrs.addAll( that.degrees );
 		return new Polynomial( dgrs );
 	}
@@ -205,16 +211,16 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Computes (this ^ that) in GF(2^k)
 	 */
 	public Polynomial xor( Polynomial that ) {
-		Polynomial or = this.or( that );
-		Polynomial and = this.and( that );
-		Set< BigInteger > dgrs = createDegreesCollection();
-		dgrs.addAll( or.degrees );
-		dgrs.removeAll( and.degrees );
-		return new Polynomial( dgrs );
+		TreeSet< BigInteger > dgrs0 = this.createDegreesCollectionCopy();
+		dgrs0.removeAll( that.degrees );
+		TreeSet< BigInteger > dgrs1 = that.createDegreesCollectionCopy();
+		dgrs1.removeAll( this.degrees );
+		dgrs1.addAll( dgrs0 );
+		return new Polynomial( dgrs1 );
 	}
 
 	/**
-	 * Computes (this % that) in GF(2^k)
+	 * Computes (this % that) in GF(2^k) using long division
 	 */
 	public Polynomial mod( Polynomial that ) {
 		BigInteger da = this.degree();
@@ -233,7 +239,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Computes (this << shift) in GF(2^k)
 	 */
 	public Polynomial shiftLeft( BigInteger shift ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( BigInteger degree : degrees ) {
 			BigInteger shifted = degree.add( shift );
 			dgrs.add( shifted );
@@ -245,7 +251,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Computes (this >> shift) in GF(2^k)
 	 */
 	public Polynomial shiftRight( BigInteger shift ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( BigInteger degree : degrees ) {
 			BigInteger shifted = degree.subtract( shift );
 			if ( shifted.compareTo( BigInteger.ZERO ) < 0 ) continue;
@@ -265,7 +271,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Sets the coefficient of the term with degree k to 1
 	 */
 	public Polynomial setDegree( BigInteger k ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		dgrs.addAll( this.degrees );
 		dgrs.add( k );
 		return new Polynomial( dgrs );
@@ -275,7 +281,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Sets the coefficient of the term with degree k to 0
 	 */
 	public Polynomial clearDegree( BigInteger k ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		dgrs.addAll( this.degrees );
 		dgrs.remove( k );
 		return new Polynomial( dgrs );
@@ -285,7 +291,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Toggles the coefficient of the term with degree k
 	 */
 	public Polynomial toggleDegree( BigInteger k ) {
-		Set< BigInteger > dgrs = createDegreesCollection();
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		dgrs.addAll( this.degrees );
 		if ( dgrs.contains( k ) ) {
 			dgrs.remove( k );
@@ -296,17 +302,15 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	}
 
 	/**
-	 * Computes x^e mod m.
+	 * Computes (this^e mod m).
 	 * 
-	 * This algorithm requires at most this.degree() + m.degree() space.'
+	 * This algorithm requires at most this.degree() + m.degree() space.
 	 * 
 	 * http://en.wikipedia.org/wiki/Modular_exponentiation
 	 */
 	public Polynomial modPow( BigInteger e, Polynomial m ) {
-
 		Polynomial result = Polynomial.ONE;
 		Polynomial b = new Polynomial( this );
-
 		while ( e.bitCount() != 0 ) {
 			if ( e.testBit( 0 ) ) {
 				result = result.multiply( b ).mod( m );
@@ -314,7 +318,6 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 			e = e.shiftRight( 1 );
 			b = b.multiply( b ).mod( m );
 		}
-
 		return result;
 	}
 
@@ -324,11 +327,11 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * 
 	 * http://en.wikipedia.org/wiki/Euclids_algorithm
 	 */
-	public Polynomial gcd( Polynomial b ) {
+	public Polynomial gcd( Polynomial that ) {
 		Polynomial a = new Polynomial( this );
-		while ( !b.isEmpty() ) {
-			Polynomial t = new Polynomial( b );
-			b = a.mod( b );
+		while ( !that.isEmpty() ) {
+			Polynomial t = new Polynomial( that );
+			that = a.mod( that );
 			a = t;
 		}
 		return a;
