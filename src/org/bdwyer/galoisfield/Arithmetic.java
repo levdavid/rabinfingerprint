@@ -1,12 +1,12 @@
 package org.bdwyer.galoisfield;
 
 public interface Arithmetic<T>{
-	public T add( T o );
-	public T subtract( T o );
-	public T multiply( T o );
-	public T and( T o );
-	public T or( T o );
-	public T xor( T o );
-	public T mod( T o );
-	public T gcd( T o );
+	public T add( T that );
+	public T subtract( T that );
+	public T multiply( T that );
+	public T and( T that );
+	public T or( T that );
+	public T xor( T that );
+	public T mod( T that );
+	public T gcd( T that );
 }
