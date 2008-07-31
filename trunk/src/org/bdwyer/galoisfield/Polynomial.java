@@ -7,10 +7,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * An immutable polynomial in the finite field GF(2^k)
+ * 
+ * Supports standard arithmetic in the field, as well as reducibility tests.
+ */
 public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynomial > {
 
 	/** number of elements in the finite field GF(2^k) */
-	public static final long Q = 2L;
+	public static final BigInteger Q = BigInteger.valueOf( 2L );
 
 	/** the polynomial "x" */
 	public static final Polynomial X = Polynomial.createFromLong( 2L );
@@ -26,7 +31,8 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	}
 
 	/**
-	 * Constructs a polynomial using the bits from a long.
+	 * Constructs a polynomial using the bits from a long. Note that Java does
+	 * not support unsigned longs.
 	 */
 	public static Polynomial createFromLong( long l ) {
 		Set< BigInteger > dgrs = createDegreesCollection();
@@ -79,7 +85,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	}
 
 	/**
-	 * An enum representing the reducibility of the polynomial
+	 * An enumeration representing the reducibility of the polynomial
 	 * 
 	 * A polynomial p(x) in GF(2^k) is called irreducible over GF[2^k] if it is
 	 * non-constant and cannot be represented as the product of two or more
@@ -91,31 +97,54 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 		REDUCIBLE, IRREDUCIBLE
 	};
 
-	/** A (sorted) set of the degrees of the terms of the polynomial */
+	/**
+	 * A (sorted) set of the degrees of the terms of the polynomial. The
+	 * sortedness helps quickly compute the degree as well as print out the
+	 * terms in order. The O(nlogn) performance of insertions and deletions
+	 * might actually hurt us, though, so we might consider moving to a HashSet
+	 */
 	private final TreeSet< BigInteger > degrees;
 
+	/**
+	 * Construct a new, empty polynomial
+	 */
 	public Polynomial() {
 		this.degrees = createDegreesCollection();
 	}
 
+	/**
+	 * Construct a new polynomial copy of the input argument
+	 */
+	public Polynomial( Polynomial p ) {
+		this( p.degrees );
+	}
+
+	/**
+	 * Construct a new polynomial from a collection of degrees
+	 */
 	protected Polynomial( Collection< BigInteger > degrees ) {
 		this();
 		this.degrees.addAll( degrees );
 	}
 
-	public Polynomial( Polynomial p ) {
-		this( p.degrees );
-	}
-
+	/**
+	 * Factory for create the degrees collection.
+	 */
 	protected static TreeSet< BigInteger > createDegreesCollection() {
 		return new TreeSet< BigInteger >( new ReverseComparator() );
 	}
 
+	/**
+	 * Returns the degree of the highest term or -1 otherwise.
+	 */
 	public BigInteger degree() {
 		if ( degrees.isEmpty() ) return BigInteger.ONE.negate();
 		return degrees.first();
 	}
 
+	/**
+	 * Tests if the polynomial is empty, i.e. it has no terms
+	 */
 	public boolean isEmpty() {
 		return degrees.isEmpty();
 	}
@@ -290,7 +319,8 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	}
 
 	/**
-	 * Computes the greatest common divisor between polynomials using Euclid's algorithm
+	 * Computes the greatest common divisor between polynomials using Euclid's
+	 * algorithm
 	 * 
 	 * http://en.wikipedia.org/wiki/Euclids_algorithm
 	 */
@@ -312,12 +342,13 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	public BigInteger toBigInteger() {
 		BigInteger b = BigInteger.ZERO;
 		for ( BigInteger degree : degrees ) {
-// technically accurate but slow as hell:
-//			BigInteger term = BigInteger.ONE;
-//			for ( BigInteger i = BigInteger.ONE; i.compareTo( degree ) >= 0; i = i.add( BigInteger.ONE ) ) {
-//				term = term.shiftLeft( 1 );
-//			}
-			b = b.setBit( (int)degree.longValue() );
+			// technically accurate but slow as hell:
+			// BigInteger term = BigInteger.ONE;
+			// for ( BigInteger i = BigInteger.ONE; i.compareTo( degree ) >= 0;
+			// i = i.add( BigInteger.ONE ) ) {
+			// term = term.shiftLeft( 1 );
+			// }
+			b = b.setBit( (int) degree.longValue() );
 		}
 		return b;
 	}
@@ -390,6 +421,11 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * Tests the reducibility of the polynomial
 	 */
 	public Reducibility getReducibility() {
+		// test trivial cases
+		if ( this.compareTo( Polynomial.ONE ) == 0 ) return Reducibility.REDUCIBLE;
+		if ( this.compareTo( Polynomial.X ) == 0 ) return Reducibility.REDUCIBLE;
+
+		// do full-on reducibility test
 		return getReducibilityBenOr();
 	}
 
@@ -440,7 +476,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 */
 	private Polynomial reduceExponent( final int p ) {
 		// compute (x^q^p mod f)
-		BigInteger q_to_p = BigInteger.valueOf( Q ).pow( p );
+		BigInteger q_to_p = Q.pow( p );
 		Polynomial x_to_q_to_p = X.modPow( q_to_p, this );
 
 		// subtract (x mod f)
@@ -456,6 +492,6 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 		// get first degree difference
 		Polynomial x = this.xor( o );
 		if ( x.isEmpty() ) return 0;
-		return this.hasDegree( x.degree() ) ? 1 : 0;
+		return this.hasDegree( x.degree() ) ? 1 : -1;
 	}
 }
