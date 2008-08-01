@@ -6,17 +6,14 @@ import org.bdwyer.galoisfield.Polynomial;
 
 public class RabinFingerprintPolynomial implements Fingerprint< Polynomial > {
 
+	private static final BigInteger BYTE_SHIFT = BigInteger.valueOf( 8L );
+	
 	private final Polynomial poly;
-	private final Polynomial poly_xor;
-	private final BigInteger degree;
-	private long bits;
 	private Polynomial fingerprint;
+	private long bits;
 
 	public RabinFingerprintPolynomial( Polynomial poly ) {
 		this.poly = poly;
-		this.poly_xor = poly.clearDegree( poly.degree() );
-		this.degree = poly.degree();
-
 		reset();
 	}
 
@@ -29,7 +26,7 @@ public class RabinFingerprintPolynomial implements Fingerprint< Polynomial > {
 
 	public synchronized RabinFingerprintPolynomial appendByte( byte b ) {
 		Polynomial f = fingerprint;
-		f = f.shiftLeft( BigInteger.valueOf( 8L ) );
+		f = f.shiftLeft( BYTE_SHIFT );
 		f = f.or( Polynomial.createFromLong( b & 0xFFL ) );
 		f = f.mod( poly );
 		fingerprint = f;
@@ -37,18 +34,6 @@ public class RabinFingerprintPolynomial implements Fingerprint< Polynomial > {
 		return this;
 	}
 
-	private Polynomial shiftInBit( Polynomial f, boolean inboundBit ) {
-		// get output bit
-		boolean r1 = f.hasDegree( degree );
-		// shift
-		f = f.shiftLeft( BigInteger.ONE );
-		// set input bit
-		if ( inboundBit ) f = f.setDegree( BigInteger.ZERO );
-		// xor on output == 1
-		if ( r1 ) f = f.xor( poly_xor );
-		return f.mod( poly );
-	}
-	
 	public synchronized RabinFingerprintPolynomial reset() {
 		this.bits = 0;
 		this.fingerprint = new Polynomial();
@@ -59,4 +44,7 @@ public class RabinFingerprintPolynomial implements Fingerprint< Polynomial > {
 		return fingerprint;
 	}
 
+	public synchronized long getBits() {
+		return bits;
+	}
 }
