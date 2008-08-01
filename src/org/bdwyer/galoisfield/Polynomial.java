@@ -36,11 +36,22 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 */
 	public static Polynomial createFromLong( long l ) {
 		TreeSet< BigInteger > dgrs = createDegreesCollection();
-		int i = 0;
-		while ( l != 0 ) {
-			if ( ( l & 1 ) == 1 ) dgrs.add( BigInteger.valueOf( i ) );
-			i++;
-			l >>= 1;
+		for ( int i = 0; i < 64; i++ ) {
+			if ( ( ( l >> i ) & 1 ) == 1 ) dgrs.add( BigInteger.valueOf( i ) );
+		}
+		return new Polynomial( dgrs );
+	}
+	
+	public static Polynomial createFromBytes( byte[] bytes ) {
+		TreeSet< BigInteger > dgrs = createDegreesCollection();
+		int degree = 0;
+		for ( int i = bytes.length - 1; i >= 0; i-- ) {
+			for ( int j = 0; j < 8; j++ ) {
+				if ( ( ( ( bytes[i] >> j ) & 1 ) == 1 ) ) {
+					dgrs.add( BigInteger.valueOf( degree ) );
+				}
+				degree++;
+			}
 		}
 		return new Polynomial( dgrs );
 	}
@@ -52,24 +63,34 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 * We set the final degree to ensure a monic polynomial of the correct
 	 * degree.
 	 */
-	public static Polynomial createFromBytes( byte[] bytes, long degree ) {
+	public static Polynomial createFromBytes( byte[] bytes, int degree ) {
 		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( int i = 0; i < degree; i++ ) {
-			int aidx = ( i / 8 ); // byte array index
-			int bidx = i % 8; // bit index
-			byte b = bytes[aidx];
-			if ( ( ( b >> bidx ) & 1 ) == 1 ) dgrs.add( BigInteger.valueOf( i ) );
+			boolean bit = getBit( bytes, i );
+			if ( getBit( bytes, i ) ) dgrs.add( BigInteger.valueOf( i ) );
 		}
 		dgrs.add( BigInteger.valueOf( degree ) );
 		return new Polynomial( dgrs );
+	}
+	
+	protected static boolean getBit( byte[] bytes, int index ) {
+		// byte array index
+		final int aidx = bytes.length - 1 - ( index / 8 );
+		// bit index
+		final int bidx = index % 8;
+		// byte
+		final byte b = bytes[aidx];
+		// bit
+		final boolean bit = ( ( ( b >> bidx ) & 1 ) == 1 );
+		return bit;
 	}
 
 	/**
 	 * Constructs a random polynomial of degree "degree"
 	 */
-	public static Polynomial createRandom( long degree ) {
+	public static Polynomial createRandom( int degree ) {
 		Random random = new Random();
-		byte[] bytes = new byte[(int) ( degree / 8 ) + 1];
+		byte[] bytes = new byte[(int) ( degree / 8 ) + 1 ];
 		random.nextBytes( bytes );
 		return createFromBytes( bytes, degree );
 	}
@@ -77,7 +98,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	/**
 	 * Finds a random irreducible polynomial of degree "degree"
 	 */
-	public static Polynomial createIrreducible( long degree ) {
+	public static Polynomial createIrreducible( int degree ) {
 		while ( true ) {
 			Polynomial p = createRandom( degree );
 			if ( p.getReducibility() == Reducibility.IRREDUCIBLE ) return p;
