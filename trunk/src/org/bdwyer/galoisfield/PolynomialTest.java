@@ -7,7 +7,7 @@ import org.bdwyer.galoisfield.Polynomial.Reducibility;
 public class PolynomialTest {
 
 	public static void main( String[] args ) {
-		final int degree = 31;
+		final int degree = 15;
 		// printOutSomePolys();
 		// generateIrreducibles( degree );
 		// testAgainstMaple( degree );
