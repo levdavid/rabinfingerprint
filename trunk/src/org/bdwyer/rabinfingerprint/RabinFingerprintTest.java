@@ -9,8 +9,8 @@ import org.bdwyer.galoisfield.Polynomial;
 public class RabinFingerprintTest {
 
 	public static void main( String[] args ) throws Exception {
-		testAgainstMaple( true );
-		// fingerprintFiles();
+		// testAgainstMaple( true );
+		fingerprintFiles( true );
 	}
 
 	private static void testAgainstMaple( boolean usePolynomials ) {
@@ -45,23 +45,35 @@ public class RabinFingerprintTest {
 		}
 	}
 
-	private static void fingerprintFiles() throws Exception {
+	private static void fingerprintFiles( boolean usePolynomials ) throws Exception {
 		// generate random irreducible polynomial
 		Polynomial p = Polynomial.createIrreducible( 31 );
-		RabinFingerprintLong rabin = new RabinFingerprintLong( p.toBigInteger().longValue() );
+		
+		// choose a fingerprinting method
+		final Fingerprint<?> rabin;
+		if ( usePolynomials ) {
+			rabin = new RabinFingerprintPolynomial( p );
+		} else {
+			rabin = new RabinFingerprintLong( p.toBigInteger().longValue() );
+		}
+		
+		// time fingerprints
 		System.out.println( "fingerprinting:" );
 		fingerprintFile( "1.mp3", rabin );
 		fingerprintFile( "2.mp3", rabin );
 		fingerprintFile( "3.mp3", rabin );
 	}
 
-	private static void fingerprintFile( String filename, RabinFingerprintLong rabin ) throws Exception {
+	private static void fingerprintFile( String filename, Fingerprint<?> rabin ) throws Exception {
 		rabin.reset();
+		
+		long start = System.currentTimeMillis();
 
 		InputStream stream = new FileInputStream( filename );
 		int next;
 		try {
-			byte[] data = new byte[2048];
+			// buffering data like this is MUCH faster
+			byte[] data = new byte[4096];
 			while ( ( next = stream.read( data ) ) >= 0 ) {
 				for ( int i = 0; i < next; i++ ) {
 					rabin.appendByte( data[i] );
@@ -70,8 +82,10 @@ public class RabinFingerprintTest {
 		} finally {
 			stream.close();
 		}
-		Long f = rabin.getFingerprint();
-		System.out.println( filename + ": " + Long.toHexString( f ).toUpperCase() );
+
+		long end = System.currentTimeMillis();
+		
+		System.out.println( filename + ": " + rabin.toString() + " in " + (end - start)/1000.0 + " seconds");
 
 	}
 }

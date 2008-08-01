@@ -19,8 +19,8 @@ public class RabinFingerprintLong implements Fingerprint< Long > {
 
 	private final long poly;
 	private final int degree;
-	private long bits;
 	private long fingerprint;
+	private long bits;
 
 	private final long[] table = new long[512];
 
@@ -105,6 +105,11 @@ public class RabinFingerprintLong implements Fingerprint< Long > {
 
 	protected boolean testBit( long l, int index ) {
 		return ( ( ( l >> index ) & 1 ) == 1 );
+	}
+	
+	@Override
+	public String toString() {
+		return Long.toHexString( fingerprint ).toUpperCase();
 	}
 
 }
