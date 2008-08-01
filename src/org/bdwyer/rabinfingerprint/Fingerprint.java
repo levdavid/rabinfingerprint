@@ -17,4 +17,5 @@ public interface Fingerprint<T> {
 	public Fingerprint<T> appendByte( byte b );	
 	public Fingerprint<T> reset() ;
 	public T getFingerprint() ;
+	public long getBits();
 }
