@@ -13,9 +13,11 @@ import org.bdwyer.rabinhash.RabinFingerPrint;
  * http://citeseer.ist.psu.edu/cache/papers/cs/752/ftp:zSzzSzftp.digital.comzSzpubzSzDECzSzSRCzSzpublicationszSzbroderzSzfing-appl.pdf/broder93some.pdf
  */
 public interface Fingerprint<T> {
-	public Fingerprint<T> appendBytes( byte[] bytes );
-	public Fingerprint<T> appendByte( byte b );	
+	public Fingerprint<T> pushBytes( byte[] bytes );
+	public Fingerprint<T> pushByte( byte b );	
+	public Fingerprint<T> popByte();	
 	public Fingerprint<T> reset() ;
 	public T getFingerprint() ;
-	public long getBits();
+	public long getBytesFingerprinted();
+	public long getBytesPerWindow();
 }

@@ -66,25 +66,13 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	public static Polynomial createFromBytes( byte[] bytes, int degree ) {
 		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( int i = 0; i < degree; i++ ) {
-			boolean bit = getBit( bytes, i );
-			if ( getBit( bytes, i ) ) dgrs.add( BigInteger.valueOf( i ) );
+			boolean bit = PolynomialUtils.getBit( bytes, i );
+			if ( PolynomialUtils.getBit( bytes, i ) ) dgrs.add( BigInteger.valueOf( i ) );
 		}
 		dgrs.add( BigInteger.valueOf( degree ) );
 		return new Polynomial( dgrs );
 	}
 	
-	protected static boolean getBit( byte[] bytes, int index ) {
-		// byte array index
-		final int aidx = bytes.length - 1 - ( index / 8 );
-		// bit index
-		final int bidx = index % 8;
-		// byte
-		final byte b = bytes[aidx];
-		// bit
-		final boolean bit = ( ( ( b >> bidx ) & 1 ) == 1 );
-		return bit;
-	}
-
 	/**
 	 * Constructs a random polynomial of degree "degree"
 	 */
@@ -241,7 +229,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	}
 
 	/**
-	 * Computes (this % that) in GF(2^k) using long division
+	 * Computes (this mod that) in GF(2^k) using synthetic division
 	 */
 	public Polynomial mod( Polynomial that ) {
 		BigInteger da = this.degree();
