@@ -4,6 +4,12 @@ import java.math.BigInteger;
 
 import org.bdwyer.galoisfield.Polynomial;
 
+/**
+ * 
+ * Some applications of Rabin's fingerprinting method (1993)
+ * Andrei Z. Broder
+ * http://citeseer.ist.psu.edu/broder93some.html
+ */
 public class RabinFingerprintPolynomial implements Fingerprint< Polynomial > {
 
 	private static final BigInteger BYTE_SHIFT = BigInteger.valueOf( 8L );
@@ -46,5 +52,10 @@ public class RabinFingerprintPolynomial implements Fingerprint< Polynomial > {
 
 	public synchronized long getBits() {
 		return bits;
+	}
+	
+	@Override
+	public String toString() {
+		return fingerprint.toHexString();
 	}
 }
