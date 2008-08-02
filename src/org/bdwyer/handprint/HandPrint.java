@@ -17,7 +17,7 @@ public class HandPrint {
 	public HandPrint( List< Chunk > chunks ) {
 		this.chunks = chunks;
 		Collections.sort( chunks );
-		Collections.reverse( chunks );
+		Collections.reverse( chunks ); // 0's are common, so we reverse sort
 		this.hand = new ArrayList< Chunk >( FINGERS );
 		for ( int i = 0; i < FINGERS && i < chunks.size(); i++ ) {
 			this.hand.add( this.chunks.get( i ) );
@@ -29,6 +29,9 @@ public class HandPrint {
 		return this.hand.toString();
 	}
 	
+	/**
+	 * Assumes chunk lists are reverse sorted
+	 */
 	public static int countOverlap( HandPrint ha, HandPrint hb ) {
 		int matches = 0;
 
