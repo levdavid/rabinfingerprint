@@ -1,4 +1,4 @@
-package org.bdwyer.rabinhash;
+package org.bdwyer.handprint;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import org.bdwyer.rabinhash.RabinFingerprinter.WindowVisitor;
+import org.bdwyer.handprint.RabinFingerprinter.WindowVisitor;
 
 public class StreamChunker implements WindowVisitor {
 

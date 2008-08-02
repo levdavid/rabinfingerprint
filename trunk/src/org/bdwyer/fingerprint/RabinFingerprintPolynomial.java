@@ -1,8 +1,8 @@
-package org.bdwyer.rabinfingerprint;
+package org.bdwyer.fingerprint;
 
 import java.math.BigInteger;
 
-import org.bdwyer.galoisfield.Polynomial;
+import org.bdwyer.polynomial.Polynomial;
 
 /**
  * This class implements Rabin's Fingerprinting scheme using a Polynomial class

@@ -1,10 +1,10 @@
-package org.bdwyer.rabinfingerprint;
+package org.bdwyer.fingerprint;
 
 import java.math.BigInteger;
 import java.util.Random;
 
-import org.bdwyer.galoisfield.Polynomial;
-import org.bdwyer.rabinhash.RabinFingerPrint;
+import org.bdwyer.handprint.RabinFingerPrint;
+import org.bdwyer.polynomial.Polynomial;
 
 /**
  * Overview of Rabin's scheme given by Broder

@@ -1,4 +1,4 @@
-package org.bdwyer.galoisfield;
+package org.bdwyer.polynomial;
 
 public class PolynomialUtils {
 

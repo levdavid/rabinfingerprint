@@ -1,4 +1,4 @@
-package org.bdwyer.galoisfield;
+package org.bdwyer.polynomial;
 
 import java.math.BigInteger;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package org.bdwyer.rabinfingerprint;
+package org.bdwyer.fingerprint;
 
 /**
  * A fast, but dangerous circular byte queue. There is no enforcement that the

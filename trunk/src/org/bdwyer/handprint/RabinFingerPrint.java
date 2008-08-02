@@ -1,4 +1,4 @@
-package org.bdwyer.rabinhash;
+package org.bdwyer.handprint;
 
 import java.math.BigInteger;
 
