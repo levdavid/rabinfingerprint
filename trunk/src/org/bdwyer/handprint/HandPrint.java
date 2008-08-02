@@ -17,6 +17,7 @@ public class HandPrint {
 	public HandPrint( List< Chunk > chunks ) {
 		this.chunks = chunks;
 		Collections.sort( chunks );
+		Collections.reverse( chunks );
 		this.hand = new ArrayList< Chunk >( FINGERS );
 		for ( int i = 0; i < FINGERS && i < chunks.size(); i++ ) {
 			this.hand.add( this.chunks.get( i ) );
@@ -41,12 +42,12 @@ public class HandPrint {
 		int cmp = ac.compareTo( bc );
 
 		while ( true ) {
-			while ( cmp < 0 ) {
+			while ( cmp > 0 ) {
 				if ( ia.hasNext() == false ) return matches;
 				ac = ia.next();
 				cmp = ac.compareTo( bc );
 			}
-			while ( cmp > 0 ) {
+			while ( cmp < 0 ) {
 				if ( ib.hasNext() == false ) return matches;
 				bc = ib.next();
 				cmp = ac.compareTo( bc );

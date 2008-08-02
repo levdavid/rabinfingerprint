@@ -1,10 +1,5 @@
 package org.bdwyer.fingerprint;
 
-import java.math.BigInteger;
-import java.util.Random;
-
-import org.bdwyer.handprint.RabinFingerPrint;
-import org.bdwyer.polynomial.Polynomial;
 
 /**
  * Overview of Rabin's scheme given by Broder
@@ -14,6 +9,7 @@ import org.bdwyer.polynomial.Polynomial;
  */
 public interface Fingerprint<T> {
 	public Fingerprint<T> pushBytes( byte[] bytes );
+	public Fingerprint<T> pushBytes( byte[] bytes, int offset, int length );
 	public Fingerprint<T> pushByte( byte b );	
 	public Fingerprint<T> popByte();	
 	public Fingerprint<T> reset() ;

@@ -25,6 +25,13 @@ public abstract class AbstractFingerprint implements Fingerprint< Polynomial > {
 		return this;
 	}
 
+	public AbstractFingerprint pushBytes( byte[] bytes, int offset, int length ) {
+		for ( int i = offset; i < offset + length; i++ ) {
+			pushByte( bytes[i] );
+		}
+		return this;
+	}
+
 	public abstract AbstractFingerprint pushByte( byte b );
 
 	public abstract AbstractFingerprint popByte();

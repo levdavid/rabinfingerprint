@@ -117,4 +117,8 @@ public class RabinFingerprintLong extends AbstractFingerprint {
 	public synchronized Polynomial getFingerprint() {
 		return Polynomial.createFromLong( fingerprint );
 	}
+
+	public synchronized long getFingerprintLong() {
+		return fingerprint;
+	}
 }
