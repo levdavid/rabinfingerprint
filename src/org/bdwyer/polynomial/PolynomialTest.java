@@ -1,8 +1,8 @@
-package org.bdwyer.galoisfield;
+package org.bdwyer.polynomial;
 
 import java.util.Random;
 
-import org.bdwyer.galoisfield.Polynomial.Reducibility;
+import org.bdwyer.polynomial.Polynomial.Reducibility;
 
 public class PolynomialTest {
 

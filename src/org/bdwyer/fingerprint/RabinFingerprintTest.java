@@ -1,10 +1,10 @@
-package org.bdwyer.rabinfingerprint;
+package org.bdwyer.fingerprint;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Random;
 
-import org.bdwyer.galoisfield.Polynomial;
+import org.bdwyer.polynomial.Polynomial;
 
 public class RabinFingerprintTest {
 

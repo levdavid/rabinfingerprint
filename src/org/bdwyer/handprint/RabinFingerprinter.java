@@ -1,4 +1,4 @@
-package org.bdwyer.rabinhash;
+package org.bdwyer.handprint;
 
 import java.io.File;
 import java.io.FileInputStream;
