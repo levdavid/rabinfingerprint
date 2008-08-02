@@ -10,8 +10,6 @@ import org.bdwyer.polynomial.Polynomial;
  * {@link RabinFingerprintLong}, but can support monic irreducible polynomials
  * of nearly any degree.
  * 
- * Rabin's Fingerprinting Scheme: http://en.wikipedia.org/wiki/Rabin_fingerprint
- * 
  * <pre>
  *     Given an n-bit message m_0, ..., m_n-1, we view it as a polynomial of degree
  *     n-1 over the finite field GF(2).
@@ -54,6 +52,10 @@ import org.bdwyer.polynomial.Polynomial;
  * A table lookup method is obviously possible, and that is exactly what we do
  * in {@link RabinFingerprintLong}.
  * 
+ * 
+ * "Rabin Fingerprint"
+ * http://en.wikipedia.org/wiki/Rabin_fingerprint
+ * 
  * Michael O. Rabin, "Fingerprinting by Random Polynomials" (1981)
  * http://www.xmailserver.org/rabin.pdf
  * 
@@ -63,7 +65,8 @@ import org.bdwyer.polynomial.Polynomial;
  */
 public class RabinFingerprintPolynomial extends AbstractFingerprint {
 
-	private static final BigInteger BYTE_SHIFT = BigInteger.valueOf( 8L );
+	private final BigInteger byteShift;
+	private final BigInteger windowShift;
 
 	private Polynomial fingerprint;
 
@@ -73,6 +76,8 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 
 	public RabinFingerprintPolynomial( Polynomial poly, long bytesPerWindow ) {
 		super( poly, bytesPerWindow );
+		this.byteShift = BigInteger.valueOf( 8 );
+		this.windowShift = BigInteger.valueOf( bytesPerWindow * 8 );
 	}
 
 	/**
@@ -83,7 +88,7 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 	@Override
 	public synchronized RabinFingerprintPolynomial pushByte( byte b ) {
 		Polynomial f = fingerprint;
-		f = f.shiftLeft( BYTE_SHIFT );
+		f = f.shiftLeft( byteShift );
 		f = f.or( Polynomial.createFromLong( b & 0xFFL ) );
 		f = f.mod( poly );
 
@@ -112,7 +117,7 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 	public synchronized RabinFingerprintPolynomial popByte() {
 		byte b = byteWindow.poll();
 		Polynomial f = Polynomial.createFromLong( b & 0xFFL );
-		f = f.shiftLeft( BigInteger.valueOf( bytesPerWindow * 8 ) );
+		f = f.shiftLeft( windowShift );
 		f = f.mod( poly );
 
 		fingerprint = fingerprint.xor( f );
