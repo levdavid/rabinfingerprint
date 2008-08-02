@@ -12,9 +12,9 @@ import org.bdwyer.polynomial.Polynomial;
  * Note, the polynomial must be of degree 64 - 8 - 1 - 1 = 54 or less!
  * <pre>
  *   64 for the size of a long
- *   8 for the space we need when shifting
- *   1 for the sign bit (Java doesn't support unsigned longs)
- *   1 for the conversion between degree and bit offset.
+ *    8 for the space we need when shifting
+ *    1 for the sign bit (Java doesn't support unsigned longs)
+ *    1 for the conversion between degree and bit offset.
  * </pre>
  * 
  * Some good choices are 53, 47, 31, 15
