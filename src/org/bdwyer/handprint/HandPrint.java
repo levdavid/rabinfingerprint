@@ -1,68 +1,70 @@
 package org.bdwyer.handprint;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-
+import org.bdwyer.polynomial.Polynomial;
 
 public class HandPrint {
 
 	private static final int FINGERS = 20;
 
-	protected final List< Chunk > chunks;
-	protected final List< Chunk > hand;
+	protected final File file;
+	protected final Polynomial p;
 
-	public HandPrint( List< Chunk > chunks ) {
-		this.chunks = chunks;
+	protected Collection<Integer> offsets;
+	protected List<Chunk> chunks;
+	protected List<Chunk> hand;
+	protected Long thumbprint;
+
+	public HandPrint( File file, Polynomial p ) {
+		this.file = file;
+		this.p = p;
+	}
+	
+	public void buildAll(){
+		getThumbprint();
+		getOffsets();
+		getChunks();
+		getHand();
+	}
+
+	public Long getThumbprint() {
+		if ( thumbprint != null ) return thumbprint;
+		thumbprint = Thumbprinter.getThumbprint( file, p );
+		return thumbprint;
+	}
+
+	public Collection<Integer> getOffsets() {
+		if ( offsets != null ) return offsets;
+		offsets = ChunkFinder.getOffsets( file, p );
+		return offsets;
+	}
+
+	public List<Chunk> getChunks() {
+		if ( chunks != null ) return chunks;
+		chunks = Chunker.getChunks( file, p, getOffsets() );
+		// 0's are common, so we reverse sort
 		Collections.sort( chunks );
-		Collections.reverse( chunks ); // 0's are common, so we reverse sort
-		this.hand = new ArrayList< Chunk >( FINGERS );
-		for ( int i = 0; i < FINGERS && i < chunks.size(); i++ ) {
-			this.hand.add( this.chunks.get( i ) );
+		Collections.reverse( chunks );
+		return chunks;
+	}
+
+	public List<Chunk> getHand() {
+		if ( hand != null ) return hand;
+		hand = new ArrayList<Chunk>( FINGERS );
+		for ( int i = 0; i < FINGERS && i < getChunks().size(); i++ ) {
+			hand.add( getChunks().get( i ) );
 		}
+		return hand;
 	}
 
 	@Override
 	public String toString() {
-		return this.hand.toString();
+		return getHand().toString();
 	}
-	
-	/**
-	 * Assumes chunk lists are reverse sorted
-	 */
-	public static int countOverlap( HandPrint ha, HandPrint hb ) {
-		int matches = 0;
 
-		final Iterator< Chunk > ia = ha.chunks.iterator();
-		final Iterator< Chunk > ib = hb.chunks.iterator();
-
-		if ( ia.hasNext() == false || ib.hasNext() == false ) return matches;
-
-		Chunk ac = ia.next();
-		Chunk bc = ib.next();
-		int cmp = ac.compareTo( bc );
-
-		while ( true ) {
-			while ( cmp > 0 ) {
-				if ( ia.hasNext() == false ) return matches;
-				ac = ia.next();
-				cmp = ac.compareTo( bc );
-			}
-			while ( cmp < 0 ) {
-				if ( ib.hasNext() == false ) return matches;
-				bc = ib.next();
-				cmp = ac.compareTo( bc );
-			}
-			while ( cmp == 0 ) {
-				matches++;
-				if ( ia.hasNext() == false || ib.hasNext() == false ) return matches;
-				ac = ia.next();
-				bc = ib.next();
-				cmp = ac.compareTo( bc );
-			}
-		}
-	}
-	
 }

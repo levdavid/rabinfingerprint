@@ -1,6 +1,5 @@
 package org.bdwyer.handprint;
 
-import java.util.Comparator;
 
 public class Chunk implements Comparable< Chunk > {
 	private int start;

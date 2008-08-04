@@ -1,7 +1,5 @@
 package org.bdwyer.fingerprint;
 
-import java.util.Queue;
-
 import org.bdwyer.polynomial.Polynomial;
 
 public abstract class AbstractFingerprint implements Fingerprint< Polynomial > {

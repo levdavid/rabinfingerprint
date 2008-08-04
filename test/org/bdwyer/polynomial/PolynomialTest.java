@@ -1,7 +1,5 @@
 package org.bdwyer.polynomial;
 
-import java.util.Random;
-
 import org.bdwyer.polynomial.Polynomial.Reducibility;
 
 public class PolynomialTest {
@@ -18,7 +16,7 @@ public class PolynomialTest {
 	/**
 	 * Generates a handful of irreducible polynomials of the specified degree.
 	 */
-	private static void generateIrreducibles( final int degree ) {
+	public static void generateIrreducibles( final int degree ) {
 		for ( int i = 0; i < 10; i++ ) {
 			Polynomial p = Polynomial.createIrreducible( degree );
 			System.out.println( p.toPolynomialString() );
@@ -29,7 +27,7 @@ public class PolynomialTest {
 	 * Generates a large irreducible polynomial and prints out its
 	 * representation in ascii and hex.
 	 */
-	private static void generateLargeIrreducible() {
+	public static void generateLargeIrreducible() {
 		Polynomial p = Polynomial.createIrreducible( 127 );
 		System.out.println( p.toPolynomialString() );
 		System.out.println( p.toHexString() );
@@ -41,7 +39,7 @@ public class PolynomialTest {
 	 * The polys used are from here:
 	 * http://en.wikipedia.org/wiki/Finite_field_arithmetic#Rijndael.27s_finite_field
 	 */
-	private static void printOutSomePolys() {
+	public static void printOutSomePolys() {
 		Polynomial pa = Polynomial.createFromLong( 0x53 );
 		Polynomial pb = Polynomial.createFromLong( 0xCA );
 		Polynomial pm = Polynomial.createFromLong( 0x11B );
@@ -63,7 +61,7 @@ public class PolynomialTest {
 	 * 
 	 * This is a good correctness verification.
 	 */
-	private static void testAgainstMaple( final int degree ) {
+	public static void testAgainstMaple( final int degree ) {
 		// this will give us 10 irreducible polys on average
 		for ( int i = 0; i < degree * 10; i++ ) {
 			Polynomial p = Polynomial.createRandom( degree );
@@ -90,7 +88,7 @@ public class PolynomialTest {
 	 * This is not a perfect correctness verification, but it is a good "mine
 	 * canary".
 	 */
-	private static void testSpread( final int degree ) {
+	public static void testSpread( final int degree ) {
 		int i = 0;
 		int last_i = 0;
 		float spread_accum = 0;
