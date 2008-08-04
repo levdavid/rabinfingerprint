@@ -23,19 +23,19 @@ public class ChunkerTest {
 		System.out.println( "thumb 3: " + hand3.getThumbprint() );
 		System.out.println( "thumb 4: " + hand4.getThumbprint() );
 
-		System.out.println( "|chunks| 1: " + hand1.getSize() );
-		System.out.println( "|chunks| 2: " + hand2.getSize() );
-		System.out.println( "|chunks| 3: " + hand3.getSize() );
-		System.out.println( "|chunks| 4: " + hand4.getSize() );
+		System.out.println( "|chunks| 1: " + hand1.getChunkCount() );
+		System.out.println( "|chunks| 2: " + hand2.getChunkCount() );
+		System.out.println( "|chunks| 3: " + hand3.getChunkCount() );
+		System.out.println( "|chunks| 4: " + hand4.getChunkCount() );
 
 		System.out.println( "hand 1: " + hand1.toString() );
 		System.out.println( "hand 2: " + hand2.toString() );
 		System.out.println( "hand 3: " + hand3.toString() );
 		System.out.println( "hand 4: " + hand4.toString() );
 		
-		double sim12 = 100.0 * (double) HandprintUtils.countOverlap( hand1, hand2 ) / (double) Math.max( hand1.getSize(), hand2.getSize() );
-		double sim13 = 100.0 * (double) HandprintUtils.countOverlap( hand1, hand3 ) / (double) Math.max( hand1.getSize(), hand3.getSize() );
-		double sim14 = 100.0 * (double) HandprintUtils.countOverlap( hand1, hand4 ) / (double) Math.max( hand1.getSize(), hand4.getSize() );		
+		double sim12 = 100.0 * (double) HandprintUtils.countOverlap( hand1, hand2 ) / (double) Math.max( hand1.getChunkCount(), hand2.getChunkCount() );
+		double sim13 = 100.0 * (double) HandprintUtils.countOverlap( hand1, hand3 ) / (double) Math.max( hand1.getChunkCount(), hand3.getChunkCount() );
+		double sim14 = 100.0 * (double) HandprintUtils.countOverlap( hand1, hand4 ) / (double) Math.max( hand1.getChunkCount(), hand4.getChunkCount() );		
 		
 		System.out.println( "1->2: " + HandprintUtils.countOverlap( hand1, hand2 ) + " (" + sim12 + "%)" );
 		System.out.println( "1->3: " + HandprintUtils.countOverlap( hand1, hand3 ) + " (" + sim13 + "%)" );
