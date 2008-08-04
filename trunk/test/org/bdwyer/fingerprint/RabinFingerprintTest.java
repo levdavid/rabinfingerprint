@@ -5,9 +5,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Random;
 
-import org.bdwyer.fingerprint.Fingerprint;
-import org.bdwyer.fingerprint.RabinFingerprintLong;
-import org.bdwyer.fingerprint.RabinFingerprintPolynomial;
 import org.bdwyer.polynomial.Polynomial;
 
 public class RabinFingerprintTest {
@@ -16,12 +13,12 @@ public class RabinFingerprintTest {
 		// testAgainstMaple( true );
 		// testAgainstMaple( false );
 		// fingerprintFiles( true );
-		// fingerprintFiles( false );
-		testWindowing( true );
-		testWindowing( false );
+		 fingerprintFiles( false );
+		// testWindowing( true );
+		// testWindowing( false );
 	}
 	
-	private static void testWindowing( boolean usePolynomials ) {
+	public static void testWindowing( boolean usePolynomials ) {
 		for ( int i = 0; i < 10; i++ ) {
 			// generate random data
 			byte[] data = new byte[64];
@@ -61,7 +58,7 @@ public class RabinFingerprintTest {
 		}
 	}
 
-	private static void testAgainstMaple( boolean usePolynomials ) {
+	public static void testAgainstMaple( boolean usePolynomials ) {
 		for ( int i = 0; i < 5; i++ ) {
 			// generate random data
 			byte[] data = new byte[64];
@@ -94,16 +91,16 @@ public class RabinFingerprintTest {
 		}
 	}
 
-	private static void fingerprintFiles( boolean usePolynomials ) throws Exception {
+	public static void fingerprintFiles( boolean usePolynomials ) throws Exception {
 		// generate random irreducible polynomial
 		Polynomial p = Polynomial.createIrreducible( 31 );
 		
 		// choose a fingerprinting method
 		final Fingerprint<?> rabin;
 		if ( usePolynomials ) {
-			rabin = new RabinFingerprintPolynomial( p, 128 );
+			rabin = new RabinFingerprintPolynomial( p );
 		} else {
-			rabin = new RabinFingerprintLong( p, 128 );
+			rabin = new RabinFingerprintLong( p );
 		}
 		
 		// time fingerprints
@@ -113,7 +110,7 @@ public class RabinFingerprintTest {
 		fingerprintFile( "3.mp3", rabin );
 	}
 
-	private static void fingerprintFile( String filename, Fingerprint<?> rabin ) throws Exception {
+	public static void fingerprintFile( String filename, Fingerprint<?> rabin ) throws Exception {
 		rabin.reset();
 		long start = System.currentTimeMillis();
 		InputStream stream = new FileInputStream( filename );

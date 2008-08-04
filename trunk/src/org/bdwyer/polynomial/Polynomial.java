@@ -1,10 +1,8 @@
 package org.bdwyer.polynomial;
 
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Random;
-import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -66,7 +64,6 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	public static Polynomial createFromBytes( byte[] bytes, int degree ) {
 		TreeSet< BigInteger > dgrs = createDegreesCollection();
 		for ( int i = 0; i < degree; i++ ) {
-			boolean bit = PolynomialUtils.getBit( bytes, i );
 			if ( PolynomialUtils.getBit( bytes, i ) ) dgrs.add( BigInteger.valueOf( i ) );
 		}
 		dgrs.add( BigInteger.valueOf( degree ) );
@@ -470,7 +467,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 		int degree = (int) degree().longValue();
 		for ( int i = 0; i < factors.length; i++ ) {
 			int n_i = factors[i];
-			Polynomial b = reduceExponent( i );
+			Polynomial b = reduceExponent( n_i );
 			Polynomial g = this.gcd( b );
 			if ( g.compareTo( Polynomial.ONE ) != 0 ) return Reducibility.REDUCIBLE;
 		}
