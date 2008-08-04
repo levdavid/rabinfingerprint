@@ -2,7 +2,6 @@ package org.bdwyer.handprint;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,9 +14,9 @@ public class HandPrint {
 	protected final File file;
 	protected final Polynomial p;
 
-	protected Collection<Integer> offsets;
-	protected List<Chunk> chunks;
-	protected List<Chunk> hand;
+	protected List<Long> offsets;
+	protected List<Long> chunks;
+	protected List<Long> hand;
 	protected Long thumbprint;
 
 	public HandPrint( File file, Polynomial p ) {
@@ -34,28 +33,32 @@ public class HandPrint {
 
 	public Long getThumbprint() {
 		if ( thumbprint != null ) return thumbprint;
-		thumbprint = Thumbprinter.getThumbprint( file, p );
+		thumbprint = HandprintUtils.getThumbprint( file, p );
 		return thumbprint;
 	}
 
-	public Collection<Integer> getOffsets() {
+	public List<Long> getOffsets() {
 		if ( offsets != null ) return offsets;
-		offsets = ChunkFinder.getOffsets( file, p );
+		offsets = HandprintUtils.getOffsets( file, p );
 		return offsets;
 	}
 
-	public List<Chunk> getChunks() {
+	public List<Long> getChunks() {
 		if ( chunks != null ) return chunks;
-		chunks = Chunker.getChunks( file, p, getOffsets() );
+		chunks = HandprintUtils.getChunks( file, p, getOffsets() );
 		// 0's are common, so we reverse sort
 		Collections.sort( chunks );
 		Collections.reverse( chunks );
 		return chunks;
 	}
+	
+	public int getSize(){
+		return getChunks().size();
+	}
 
-	public List<Chunk> getHand() {
+	public List<Long> getHand() {
 		if ( hand != null ) return hand;
-		hand = new ArrayList<Chunk>( FINGERS );
+		hand = new ArrayList<Long>( FINGERS );
 		for ( int i = 0; i < FINGERS && i < getChunks().size(); i++ ) {
 			hand.add( getChunks().get( i ) );
 		}
