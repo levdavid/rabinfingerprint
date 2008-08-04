@@ -9,15 +9,15 @@ import org.bdwyer.polynomial.Polynomial;
 
 public class HandPrint {
 
-	private static final int FINGERS = 20;
+	private static final int FINGERS = 10;
 
 	protected final File file;
 	protected final Polynomial p;
 
+	protected Long thumbprint;
 	protected List<Long> offsets;
 	protected List<Long> chunks;
 	protected List<Long> hand;
-	protected Long thumbprint;
 
 	public HandPrint( File file, Polynomial p ) {
 		this.file = file;
@@ -46,16 +46,10 @@ public class HandPrint {
 	public List<Long> getChunks() {
 		if ( chunks != null ) return chunks;
 		chunks = HandprintUtils.getChunks( file, p, getOffsets() );
-		// 0's are common, so we reverse sort
-		Collections.sort( chunks );
-		Collections.reverse( chunks );
+		Collections.sort( chunks, Collections.reverseOrder() );
 		return chunks;
 	}
 	
-	public int getSize(){
-		return getChunks().size();
-	}
-
 	public List<Long> getHand() {
 		if ( hand != null ) return hand;
 		hand = new ArrayList<Long>( FINGERS );
@@ -63,6 +57,10 @@ public class HandPrint {
 			hand.add( getChunks().get( i ) );
 		}
 		return hand;
+	}
+
+	public int getChunkCount(){
+		return getChunks().size();
 	}
 
 	@Override

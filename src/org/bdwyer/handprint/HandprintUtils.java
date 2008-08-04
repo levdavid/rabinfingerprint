@@ -46,8 +46,7 @@ public class HandprintUtils {
 			}
 			while ( cmp == 0 ) {
 				matches++;
-				if ( ia.hasNext() == false || ib.hasNext() == false )
-					return matches;
+				if ( ia.hasNext() == false || ib.hasNext() == false ) return matches;
 				ac = ia.next();
 				bc = ib.next();
 				cmp = ac.compareTo( bc );
@@ -59,17 +58,15 @@ public class HandprintUtils {
 	private final static int BUFFER_SIZE = 4096;
 
 	public static long getThumbprint( File file, Polynomial p ) {
-		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p );
 		final FileInputStream stream = StreamWrapper.getStream( file );
+		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p );
+		final byte[] buffer = new byte[BUFFER_SIZE];
 
-		while ( true ) {
-			byte[] buffer = new byte[BUFFER_SIZE];
-			int bytesRead = StreamWrapper.getBytes( stream, buffer );
-			if ( bytesRead < 0 ) break;
+		int bytesRead;
+		while ( ( bytesRead = StreamWrapper.getBytes( stream, buffer ) ) >= 0 ) {
 			fingerprinter.pushBytes( buffer, 0, bytesRead );
 		}
 		StreamWrapper.closeStream( stream );
-
 		return fingerprinter.getFingerprintLong();
 	}
 
@@ -78,18 +75,14 @@ public class HandprintUtils {
 	private final static long WINDOW_SIZE = 8;
 
 	public static List<Long> getOffsets( File file, Polynomial p ) {
-		final List<Long> offsets = new ArrayList<Long>();
-		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p,
-				WINDOW_SIZE );
 		final FileInputStream stream = StreamWrapper.getStream( file );
+		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p, WINDOW_SIZE );
+		final List<Long> offsets = new ArrayList<Long>();
+		final byte[] buffer = new byte[BUFFER_SIZE];
 
 		int offset = 0;
-		while ( true ) {
-			// get some bytes
-			byte[] buffer = new byte[BUFFER_SIZE];
-			int bytesRead = StreamWrapper.getBytes( stream, buffer );
-			if ( bytesRead < 0 ) break;
-
+		int bytesRead;
+		while ( ( bytesRead = StreamWrapper.getBytes( stream, buffer ) ) >= 0 ) {
 			// determine offsets
 			for ( int i = 0; i < bytesRead; i++ ) {
 				fingerprinter.pushByte( buffer[i] );
@@ -100,16 +93,13 @@ public class HandprintUtils {
 			}
 		}
 		StreamWrapper.closeStream( stream );
-
 		return offsets;
 	}
 
-	public static List<Long> getChunks( File file, Polynomial p,
-			List<Long> offsets ) {
-
+	public static List<Long> getChunks( File file, Polynomial p, List<Long> offsets ) {
+		final FileInputStream stream = StreamWrapper.getStream( file );
 		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p );
 		final List<Long> chunks = new ArrayList<Long>();
-		final FileInputStream stream = StreamWrapper.getStream( file );
 
 		long i0 = 0;
 		for ( long i1 : offsets ) {
@@ -126,7 +116,6 @@ public class HandprintUtils {
 			chunks.add( f );
 			i0 = i1;
 		}
-
 		StreamWrapper.closeStream( stream );
 		return chunks;
 
