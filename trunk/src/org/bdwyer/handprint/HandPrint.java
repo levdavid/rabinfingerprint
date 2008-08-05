@@ -25,13 +25,13 @@ public class HandPrint {
 	}
 	
 	public void buildAll(){
-		getThumbprint();
+		getThumb();
 		getOffsets();
-		getChunks();
-		getHand();
+		getAllFingers();
+		getHandFingers();
 	}
 
-	public Long getThumbprint() {
+	public Long getThumb() {
 		if ( thumbprint != null ) return thumbprint;
 		thumbprint = HandprintUtils.getThumbprint( file, p );
 		return thumbprint;
@@ -43,29 +43,35 @@ public class HandPrint {
 		return offsets;
 	}
 
-	public List<Long> getChunks() {
+	public List<Long> getAllFingers() {
 		if ( chunks != null ) return chunks;
 		chunks = HandprintUtils.getChunks( file, p, getOffsets() );
 		Collections.sort( chunks, Collections.reverseOrder() );
 		return chunks;
 	}
 	
-	public List<Long> getHand() {
+	public List<Long> getHandFingers() {
 		if ( hand != null ) return hand;
 		hand = new ArrayList<Long>( FINGERS );
-		for ( int i = 0; i < FINGERS && i < getChunks().size(); i++ ) {
-			hand.add( getChunks().get( i ) );
+		for ( int i = 0; i < FINGERS && i < getAllFingers().size(); i++ ) {
+			hand.add( getAllFingers().get( i ) );
 		}
 		return hand;
 	}
 
-	public int getChunkCount(){
-		return getChunks().size();
+	public int getFingerCount(){
+		return getAllFingers().size();
 	}
-
+	
+	public File getFile() {
+		return file;
+	}
+	
 	@Override
 	public String toString() {
-		return getHand().toString();
+		return getHandFingers().toString();
 	}
 
+	
+	
 }
