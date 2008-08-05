@@ -53,6 +53,10 @@ public class HandprintUtils {
 			}
 		}
 	}
+	
+	public static double getSimilarity( HandPrint ha, HandPrint hb ) {
+		return (double) HandprintUtils.countOverlap( ha, hb ) / (double) Math.max( ha.getFingerCount(), hb.getFingerCount() );
+	}
 
 	/** 4 KB = 1 OS Page for most platforms */
 	private final static int BUFFER_SIZE = 4096;
