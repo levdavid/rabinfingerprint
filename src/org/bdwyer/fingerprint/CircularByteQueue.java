@@ -23,7 +23,7 @@ public class CircularByteQueue {
 	/**
 	 * Adds the byte to the queue
 	 */
-	public synchronized void add( byte b ) {
+	public void add( byte b ) {
 		bytes[head] = b;
 		head++;
 		head %= capacity;
@@ -33,19 +33,19 @@ public class CircularByteQueue {
 	/**
 	 * Removes and returns the next byte in the queue
 	 */
-	public synchronized byte poll() {
+	public byte poll() {
 		byte b = bytes[tail];
 		tail++;
 		tail %= capacity;
 		size--;
 		return b;
 	}
-	
+
 	/**
 	 * Resets the queue to its original state but DOES NOT clear the array of
 	 * bytes.
 	 */
-	public synchronized void clear() {
+	public void clear() {
 		head = 0;
 		tail = 0;
 		size = 0;
@@ -55,15 +55,19 @@ public class CircularByteQueue {
 	 * Returns the number of elements that have been added to this queue minus
 	 * those that have been removed.
 	 */
-	public synchronized int size() {
+	public int size() {
 		return size;
 	}
-	
+
 	/**
 	 * Returns the capacity of this queue -- i.e. the total number of bytes that
 	 * can be stored without overflowing.
 	 */
-	public int apacity() {
+	public int capacity() {
 		return capacity;
+	}
+	
+	public boolean isFull() {
+		return size == capacity;
 	}
 }

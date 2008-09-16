@@ -8,12 +8,11 @@ package org.bdwyer.fingerprint;
  * http://citeseer.ist.psu.edu/cache/papers/cs/752/ftp:zSzzSzftp.digital.comzSzpubzSzDECzSzSRCzSzpublicationszSzbroderzSzfing-appl.pdf/broder93some.pdf
  */
 public interface Fingerprint<T> {
-	public Fingerprint<T> pushBytes( byte[] bytes );
-	public Fingerprint<T> pushBytes( byte[] bytes, int offset, int length );
-	public Fingerprint<T> pushByte( byte b );	
-	public Fingerprint<T> popByte();	
-	public Fingerprint<T> reset() ;
+	public void pushBytes( byte[] bytes );
+	public void pushBytes( byte[] bytes, int offset, int length );
+	public void pushByte( byte b );	
+	public void popByte();	
+	public void reset() ;
 	public T getFingerprint() ;
-	public long getBytesFingerprinted();
 	public long getBytesPerWindow();
 }
