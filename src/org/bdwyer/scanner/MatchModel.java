@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.bdwyer.fingerprint.RabinFingerprintLong;
+import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
 import org.bdwyer.handprint.HandPrint;
 import org.bdwyer.handprint.HandprintUtils;
 import org.bdwyer.polynomial.Polynomial;
@@ -89,12 +91,15 @@ public class MatchModel {
 		TreeMap< Long, HandPrint > thumbMapA = new TreeMap< Long, HandPrint >();
 		for ( HandPrint hand : handsA ) {
 			thumbMapA.put( hand.getThumb(), hand );
+			System.out.print(".");
 		}
 
 		TreeMap< Long, HandPrint > thumbMapB = new TreeMap< Long, HandPrint >();
 		for ( HandPrint hand : handsB ) {
 			thumbMapB.put( hand.getThumb(), hand );
+			System.out.print(".");
 		}
+		System.out.print("\n");
 		
 		List<Long> thumbsA = new ArrayList< Long >( thumbMapA.keySet() );
 
@@ -186,9 +191,12 @@ public class MatchModel {
 		final List< File > files = FileListing.getFileListing( dir );
 		final List< HandPrint > hands = new ArrayList< HandPrint >();
 
+		final RabinFingerprintLong finger = new RabinFingerprintLong( p );
+		final RabinFingerprintLongWindowed fingerWindow = new RabinFingerprintLongWindowed( p, HandprintUtils.WINDOW_SIZE );
+
 		for ( File file : files ) {
 			if ( !file.isFile() ) continue;
-			HandPrint hand = new HandPrint( file, p );
+			HandPrint hand = new HandPrint( file, finger, fingerWindow );
 			hands.add( hand );
 		}
 

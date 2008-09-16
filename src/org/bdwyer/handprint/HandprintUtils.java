@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bdwyer.fingerprint.RabinFingerprintLong;
+import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
 import org.bdwyer.polynomial.Polynomial;
 
 public class HandprintUtils {
@@ -59,13 +60,13 @@ public class HandprintUtils {
 	}
 
 	/** 4 KB = 1 OS Page for most platforms */
-	private final static int BUFFER_SIZE = 4096;
+	private final static int BUFFER_SIZE = 65536;
 
-	public static long getThumbprint( File file, Polynomial p ) {
+	public static long getThumbprint( File file, RabinFingerprintLong fingerprinter ) {
 		final FileInputStream stream = StreamWrapper.getStream( file );
-		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p );
 		final byte[] buffer = new byte[BUFFER_SIZE];
-
+		fingerprinter.reset();
+		
 		int bytesRead;
 		while ( ( bytesRead = StreamWrapper.getBytes( stream, buffer ) ) >= 0 ) {
 			fingerprinter.pushBytes( buffer, 0, bytesRead );
@@ -74,15 +75,15 @@ public class HandprintUtils {
 		return fingerprinter.getFingerprintLong();
 	}
 
-	private final static long CHUNK_BOUNDARY = 0xFFF;
-	private final static long CHUNK_PATTERN = 0xABC;
-	private final static long WINDOW_SIZE = 8;
+	public final static long CHUNK_BOUNDARY = 0xFFF;
+	public final static long CHUNK_PATTERN = 0xABC;
+	public final static long WINDOW_SIZE = 8;
 
-	public static List<Long> getOffsets( File file, Polynomial p ) {
+	public static List<Long> getOffsets( File file, RabinFingerprintLongWindowed fingerprinter ) {
 		final FileInputStream stream = StreamWrapper.getStream( file );
-		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p, WINDOW_SIZE );
 		final List<Long> offsets = new ArrayList<Long>();
 		final byte[] buffer = new byte[BUFFER_SIZE];
+		fingerprinter.reset();
 
 		int offset = 0;
 		int bytesRead;
@@ -100,11 +101,11 @@ public class HandprintUtils {
 		return offsets;
 	}
 
-	public static List<Long> getChunks( File file, Polynomial p, List<Long> offsets ) {
+	public static List<Long> getChunks( File file, RabinFingerprintLong fingerprinter, List<Long> offsets ) {
 		final FileInputStream stream = StreamWrapper.getStream( file );
-		final RabinFingerprintLong fingerprinter = new RabinFingerprintLong( p );
 		final List<Long> chunks = new ArrayList<Long>();
-
+		fingerprinter.reset();
+		
 		long i0 = 0;
 		for ( long i1 : offsets ) {
 			long size = i1 - i0;

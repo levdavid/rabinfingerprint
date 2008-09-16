@@ -3,21 +3,27 @@ package org.bdwyer.handprint;
 import java.io.File;
 import java.io.IOException;
 
+import org.bdwyer.fingerprint.RabinFingerprintLong;
+import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
 import org.bdwyer.polynomial.Polynomial;
 
 public class ChunkerTest {
 	
 	public static void main( String[] args ) throws Exception {
-		//testChunkingFiles();
+		// testChunkingFiles();
 		testSpeed();
 	}
 
 	private static void testChunkingFiles() throws IOException {
 		Polynomial p = Polynomial.createIrreducible( 53 );
-		HandPrint hand1 = new HandPrint( new File( "samples/1.mp3" ), p );
-		HandPrint hand2 = new HandPrint( new File( "samples/2.mp3" ), p );
-		HandPrint hand3 = new HandPrint( new File( "samples/3.mp3" ), p );
-		HandPrint hand4 = new HandPrint( new File( "samples/4.mp3" ), p );
+
+		RabinFingerprintLong finger = new RabinFingerprintLong( p );
+		RabinFingerprintLongWindowed fingerWindow = new RabinFingerprintLongWindowed( p, HandprintUtils.WINDOW_SIZE );
+		
+		HandPrint hand1 = new HandPrint( new File( "samples/1.mp3" ), finger, fingerWindow );
+		HandPrint hand2 = new HandPrint( new File( "samples/2.mp3" ), finger, fingerWindow );
+		HandPrint hand3 = new HandPrint( new File( "samples/3.mp3" ), finger, fingerWindow );
+		HandPrint hand4 = new HandPrint( new File( "samples/4.mp3" ), finger, fingerWindow );
 		
 		System.out.println( "thumb 1: " + hand1.getThumb() );
 		System.out.println( "thumb 2: " + hand2.getThumb() );
@@ -51,12 +57,15 @@ public class ChunkerTest {
 		final long size = file.length();
 		final double kb = (size / 1024);
 		System.out.println( "File Size: " + ( size / 1024 ) + " KB" );
+		
+		RabinFingerprintLong finger = new RabinFingerprintLong( p );
+		RabinFingerprintLongWindowed fingerWindow = new RabinFingerprintLongWindowed( p, HandprintUtils.WINDOW_SIZE );
 
 		final Stats statsThumb = new Stats();
 		final Stats statsHand = new Stats();
 		while ( true ) {
 			long start = System.currentTimeMillis();
-			HandPrint hand = new HandPrint( file, p );
+			HandPrint hand = new HandPrint( file, finger, fingerWindow );
 			hand.getThumb();
 			long endThumb = System.currentTimeMillis();
 			statsThumb.accumulate( endThumb - start );

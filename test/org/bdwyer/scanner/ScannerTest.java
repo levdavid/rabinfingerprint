@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.bdwyer.fingerprint.RabinFingerprintLong;
+import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
 import org.bdwyer.handprint.HandPrint;
 import org.bdwyer.handprint.HandprintUtils;
 import org.bdwyer.polynomial.Polynomial;
@@ -22,11 +24,14 @@ public class ScannerTest {
 		final List< File > files = FileListing.getFileListing( dir );
 		final List< HandPrint > hands = new ArrayList< HandPrint >();
 
+		final RabinFingerprintLong finger = new RabinFingerprintLong( p );
+		final RabinFingerprintLongWindowed fingerWindow = new RabinFingerprintLongWindowed( p, HandprintUtils.WINDOW_SIZE );
+		
 		long start = System.currentTimeMillis();
 
 		for ( File file : files ) {
 			if ( !file.isFile() ) continue;
-			HandPrint hand = new HandPrint( file, p );
+			HandPrint hand = new HandPrint( file, finger, fingerWindow );
 			hands.add( hand );
 			System.out.println( "Thumbprinting " + file.toString() );
 			System.out.println( Long.toHexString( hand.getThumb() ).toUpperCase() );

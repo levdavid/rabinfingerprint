@@ -23,20 +23,17 @@ import org.bdwyer.polynomial.Polynomial;
  */
 public class RabinFingerprintLong extends AbstractFingerprint {
 
-	private final int degree;
-	private long fingerprint;
+	protected final int degree;
+	protected final int shift;
+	protected long fingerprint;
 
 	protected final long[] pushTable = new long[512];
-	protected final long[] popTable = new long[256];
 	
-	public RabinFingerprintLong( Polynomial poly ){
-		this( poly, 0 );
-	}
-	
-	public RabinFingerprintLong( Polynomial poly, long bytesPerWindow ) {
-		super( poly, bytesPerWindow );
+	public RabinFingerprintLong( Polynomial poly ) {
+		super( poly );
 		this.degree = poly.degree().intValue();
-		precomputeTables();
+		this.shift = degree - 8;
+		precomputePushTable();
 	}
 
 	/**
@@ -50,53 +47,41 @@ public class RabinFingerprintLong extends AbstractFingerprint {
 	 * to be xor'red with the fingerprint in the inner loop of our own
 	 * {@link #pushByte} and {@link #popByte}
 	 */
-	private void precomputeTables() {
+	private void precomputePushTable() {
 		for ( int i = 0; i < 512; i++ ) {
 			Polynomial f = Polynomial.createFromLong( i );
 			f = f.shiftLeft( poly.degree() );
 			f = f.xor( f.mod( poly ) );
 			pushTable[i] = f.toBigInteger().longValue();
 		}
-
-		for ( int i = 0; i < 256; i++ ) {
-			Polynomial f = Polynomial.createFromLong( i );
-			f = f.shiftLeft( BigInteger.valueOf( bytesPerWindow * 8 ) );
-			f = f.mod( poly );
-			popTable[i] = f.toBigInteger().longValue();
+	}
+	
+	@Override
+	public void pushBytes( final byte[] bytes ) {
+		for ( byte b : bytes ) {
+			int j = (int) ( ( fingerprint >> shift ) & 0x1FF );
+			fingerprint = ( ( fingerprint << 8 ) | ( b & 0xFF ) ) ^ pushTable[j];
 		}
 	}
 
-	/**
-	 * Adds one byte to the fingerprint.
-	 * 
-	 * {@link RabinFingerprintPolynomial#pushByte}
-	 */
 	@Override
-	public void pushByte( byte b ) {
-		int i = (int) ( fingerprint >> ( degree - 8 ) & 0x1FF );
-		fingerprint = ( ( fingerprint << 8 ) | ( b & 0xFF ) ) ^ pushTable[i];
-
-		if ( bytesPerWindow > 0 ) {
-			byteWindow.add( b );
-			if ( byteWindow.isFull() ) popByte();
+	public void pushBytes( final byte[] bytes, final int offset, final int length ) {
+		final int max = offset + length;
+		int i = offset;
+		while ( i < max ) {
+			int j = (int) ( ( fingerprint >> shift ) & 0x1FF );
+			fingerprint = ( ( fingerprint << 8 ) | ( bytes[i++] & 0xFF ) ) ^ pushTable[j];
 		}
 	}
 	
-	/**
-	 * Removes the contribution of the first byte in the byte queue from the
-	 * fingerprint.
-	 * 
-	 * {@link RabinFingerprintPolynomial#popByte}
-	 */
 	@Override
-	public void popByte() {
-		byte b = byteWindow.poll();
-		fingerprint ^= popTable[(int) ( b & 0xFF )];
+	public void pushByte( byte b ) {
+		int j = (int) ( ( fingerprint >> shift ) & 0x1FF );
+		fingerprint = ( ( fingerprint << 8 ) | ( b & 0xFF ) ) ^ pushTable[j];
 	}
-
+	
 	@Override
 	public void reset() {
-		super.reset();
 		this.fingerprint = 0L;
 	}
 

@@ -2,6 +2,7 @@ package org.bdwyer.fingerprint;
 
 import java.math.BigInteger;
 
+import org.bdwyer.fingerprint.Fingerprint.WindowedFingerprint;
 import org.bdwyer.polynomial.Polynomial;
 
 /**
@@ -63,10 +64,13 @@ import org.bdwyer.polynomial.Polynomial;
  * http://citeseer.ist.psu.edu/broder93some.html
  * 
  */
-public class RabinFingerprintPolynomial extends AbstractFingerprint {
+public class RabinFingerprintPolynomial extends AbstractFingerprint implements WindowedFingerprint< Polynomial > {
 
 	private final BigInteger byteShift;
 	private final BigInteger windowShift;
+	
+	private final CircularByteQueue byteWindow;
+	private final long bytesPerWindow;
 
 	private Polynomial fingerprint;
 
@@ -75,9 +79,12 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 	}
 
 	public RabinFingerprintPolynomial( Polynomial poly, long bytesPerWindow ) {
-		super( poly, bytesPerWindow );
+		super( poly );
 		this.byteShift = BigInteger.valueOf( 8 );
 		this.windowShift = BigInteger.valueOf( bytesPerWindow * 8 );
+		this.bytesPerWindow = bytesPerWindow;
+		this.byteWindow = new CircularByteQueue( (int) bytesPerWindow + 1 );
+		this.fingerprint = new Polynomial();
 	}
 
 	/**
@@ -111,20 +118,19 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 	 * Note that despite this massive shift, the fingerprint will still result
 	 * in a k-bit number at the end of the calculation.
 	 */
-	@Override
 	public synchronized void popByte() {
 		byte b = byteWindow.poll();
 		Polynomial f = Polynomial.createFromLong( b & 0xFFL );
 		f = f.shiftLeft( windowShift );
 		f = f.mod( poly );
-
+		
 		fingerprint = fingerprint.xor( f );
 	}
 
 	@Override
 	public synchronized void reset() {
-		super.reset();
 		this.fingerprint = new Polynomial();
+		this.byteWindow.clear();
 	}
 
 	@Override

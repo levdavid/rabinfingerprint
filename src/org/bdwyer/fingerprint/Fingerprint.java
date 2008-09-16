@@ -11,8 +11,10 @@ public interface Fingerprint<T> {
 	public void pushBytes( byte[] bytes );
 	public void pushBytes( byte[] bytes, int offset, int length );
 	public void pushByte( byte b );	
-	public void popByte();	
 	public void reset() ;
 	public T getFingerprint() ;
-	public long getBytesPerWindow();
+	
+	public static interface WindowedFingerprint< T > extends Fingerprint< T > {
+		public void popByte();
+	}
 }
