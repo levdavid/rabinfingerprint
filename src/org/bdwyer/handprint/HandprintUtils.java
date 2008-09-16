@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.bdwyer.fingerprint.RabinFingerprintLong;
 import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
+import org.bdwyer.fingerprint.Fingerprint.FingerprintFactory;
 import org.bdwyer.polynomial.Polynomial;
 
 public class HandprintUtils {
@@ -16,6 +17,24 @@ public class HandprintUtils {
 	public static class HandprintException extends RuntimeException {
 		public HandprintException( String msg, Throwable wrapped ) {
 			super( msg, wrapped );
+		}
+	}
+
+	public static class HandprintFactory implements FingerprintFactory< Polynomial > {
+		private final RabinFingerprintLong finger;
+		private final RabinFingerprintLongWindowed fingerWindow;
+	
+		public HandprintFactory( Polynomial p, long bytesPerWindow ) {
+			this.finger = new RabinFingerprintLong( p );
+			this.fingerWindow = new RabinFingerprintLongWindowed( p, bytesPerWindow );
+		}
+	
+		public RabinFingerprintLong getFingerprint() {
+			return finger;
+		}
+	
+		public RabinFingerprintLongWindowed getWindowedFingerprint() {
+			return fingerWindow;
 		}
 	}
 

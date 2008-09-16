@@ -10,7 +10,7 @@ import org.bdwyer.polynomial.Polynomial;
 public class RabinFingerprintTest {
 
 	public static void main( String[] args ) throws Exception {
-		// testPolynomialsAndLongs();
+		testPolynomialsAndLongs();
 		// testAgainstMaple( true );
 		// testAgainstMaple( false );
 		// fingerprintFiles( true );

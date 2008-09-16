@@ -13,8 +13,13 @@ public interface Fingerprint<T> {
 	public void pushByte( byte b );	
 	public void reset() ;
 	public T getFingerprint() ;
-	
+
 	public static interface WindowedFingerprint< T > extends Fingerprint< T > {
 		public void popByte();
+	}
+	
+	public static interface FingerprintFactory< T > {
+		public Fingerprint< T > getFingerprint();
+		public WindowedFingerprint< T > getWindowedFingerprint();
 	}
 }
