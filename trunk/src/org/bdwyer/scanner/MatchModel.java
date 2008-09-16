@@ -6,11 +6,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.bdwyer.fingerprint.RabinFingerprintLong;
 import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
 import org.bdwyer.handprint.HandPrint;
 import org.bdwyer.handprint.HandprintUtils;
+import org.bdwyer.handprint.HandprintUtils.HandprintFactory;
 import org.bdwyer.polynomial.Polynomial;
 
 public class MatchModel {
@@ -89,16 +93,9 @@ public class MatchModel {
 
 		// thumbprint files
 		TreeMap< Long, HandPrint > thumbMapA = new TreeMap< Long, HandPrint >();
-		for ( HandPrint hand : handsA ) {
-			thumbMapA.put( hand.getThumb(), hand );
-			System.out.print(".");
-		}
-
 		TreeMap< Long, HandPrint > thumbMapB = new TreeMap< Long, HandPrint >();
-		for ( HandPrint hand : handsB ) {
-			thumbMapB.put( hand.getThumb(), hand );
-			System.out.print(".");
-		}
+		
+		thumbprintTasks( handsA, handsB, thumbMapA, thumbMapB );
 		System.out.print("\n");
 		
 		List<Long> thumbsA = new ArrayList< Long >( thumbMapA.keySet() );
@@ -125,23 +122,52 @@ public class MatchModel {
 		}
 	}
 
+	private void thumbprintTasks(
+			final Collection< HandPrint > handsA, final Collection< HandPrint > handsB,
+			final TreeMap< Long, HandPrint > thumbMapA, final TreeMap< Long, HandPrint > thumbMapB ) {
+		
+		final CountDownLatch doneSignal = new CountDownLatch( 2 );
+		final ExecutorService executor = Executors.newFixedThreadPool( 2 );
+
+		final class ThumbRunnable implements Runnable {
+			private final Collection< HandPrint > hands;
+			private final TreeMap< Long, HandPrint > map;
+
+			public ThumbRunnable( Collection< HandPrint > hands, TreeMap< Long, HandPrint > map ) {
+				super();
+				this.hands = hands;
+				this.map = map;
+			}
+
+			public void run() {
+				for ( HandPrint hand : hands ) {
+					map.put( hand.getThumb(), hand );
+					System.out.print( "." );
+					System.out.flush();
+				}
+				doneSignal.countDown();
+			}
+		}
+		
+		executor.execute( new ThumbRunnable( handsA, thumbMapA ) );
+		executor.execute( new ThumbRunnable( handsB, thumbMapB ) );
+				
+		try {
+			doneSignal.await(); // wait for all to finish
+		} catch ( InterruptedException ie ) {
+		}
+		executor.shutdown();
+
+	}
+
 	private void findPartialMatches( Collection< HandPrint > handsA, Collection< HandPrint > handsB ) {
-		System.out.println("fingerprinting " + (handsA.size() + handsB.size()) + " files");
+		System.out.println("handprinting " + (handsA.size() + handsB.size()) + " files");
 
 		// build all fingers
 		TreeMap< Long, HandPrint > handMapA = new TreeMap< Long, HandPrint >();
-		for ( HandPrint hand : handsA ) {
-			for ( Long finger : hand.getHandFingers() ) {
-				handMapA.put( finger, hand );
-			}
-		}
-
 		TreeMap< Long, HandPrint > handMapB = new TreeMap< Long, HandPrint >();
-		for ( HandPrint hand : handsB ) {
-			for ( Long finger : hand.getHandFingers() ) {
-				handMapB.put( finger, hand );
-			}
-		}
+		
+		handprintTasks( handsA, handsB, handMapA, handMapB );
 
 		// print intersection
 		List<Long> fingersA = new ArrayList< Long >( handMapA.keySet() );
@@ -166,6 +192,46 @@ public class MatchModel {
 			}
 		}
 	}
+
+	private void handprintTasks(
+			Collection< HandPrint > handsA, Collection< HandPrint > handsB,
+			TreeMap< Long, HandPrint > handMapA, TreeMap< Long, HandPrint > handMapB ) {
+		
+		final CountDownLatch doneSignal = new CountDownLatch( 2 );
+		final ExecutorService executor = Executors.newFixedThreadPool( 2 );
+
+		final class HandRunnable implements Runnable {
+			private final Collection< HandPrint > hands;
+			private final TreeMap< Long, HandPrint > map;
+
+			public HandRunnable( Collection< HandPrint > hands, TreeMap< Long, HandPrint > map ) {
+				super();
+				this.hands = hands;
+				this.map = map;
+			}
+
+			public void run() {
+				for ( HandPrint hand : hands ) {
+					for ( Long finger : hand.getHandFingers() ) {
+						map.put( finger, hand );
+					}
+					System.out.print( "." );
+					System.out.flush();
+				}
+				doneSignal.countDown();
+			}
+		}
+
+		executor.execute( new HandRunnable( handsA, handMapA ) );
+		executor.execute( new HandRunnable( handsB, handMapB ) );
+
+		try {
+			doneSignal.await(); // wait for all to finish
+		} catch ( InterruptedException ie ) {
+		}
+		executor.shutdown();
+	}
+	
 	private void findNonMatches( Collection< HandPrint > handsA, Collection< HandPrint > handsB ) {
 		for( HandPrint hand : handsA ){
 			matches.add( new NonMatch( hand, null ) );
@@ -190,19 +256,14 @@ public class MatchModel {
 		final File dir = new File( path );
 		final List< File > files = FileListing.getFileListing( dir );
 		final List< HandPrint > hands = new ArrayList< HandPrint >();
-
-		final RabinFingerprintLong finger = new RabinFingerprintLong( p );
-		final RabinFingerprintLongWindowed fingerWindow = new RabinFingerprintLongWindowed( p, HandprintUtils.WINDOW_SIZE );
+		final HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
 
 		for ( File file : files ) {
 			if ( !file.isFile() ) continue;
-			HandPrint hand = new HandPrint( file, finger, fingerWindow );
+			HandPrint hand = new HandPrint( file, factory );
 			hands.add( hand );
 		}
 
 		return hands;
 	}
-	
-	
-	
 }

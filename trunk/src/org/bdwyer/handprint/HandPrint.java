@@ -5,27 +5,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bdwyer.fingerprint.RabinFingerprintLong;
-import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
-import org.bdwyer.polynomial.Polynomial;
+import org.bdwyer.handprint.HandprintUtils.HandprintFactory;
 
 public class HandPrint {
-
+	
 	private static final int FINGERS = 10;
 
 	protected final File file;
-	protected final RabinFingerprintLong finger;
-	protected final RabinFingerprintLongWindowed fingerWindow;
+	protected final HandprintFactory factory;
 
 	protected Long thumbprint;
-	protected List<Long> offsets;
-	protected List<Long> chunks;
-	protected List<Long> hand;
+	protected List< Long > offsets;
+	protected List< Long > chunks;
+	protected List< Long > hand;
 
-	public HandPrint( File file, RabinFingerprintLong finger, RabinFingerprintLongWindowed fingerWindow ) {
+	public HandPrint( File file, HandprintFactory factory ) {
 		this.file = file;
-		this.finger = finger;
-		this.fingerWindow = fingerWindow;
+		this.factory = factory;
 	}
 	
 	public void buildAll(){
@@ -37,19 +33,19 @@ public class HandPrint {
 
 	public Long getThumb() {
 		if ( thumbprint != null ) return thumbprint;
-		thumbprint = HandprintUtils.getThumbprint( file, finger );
+		thumbprint = HandprintUtils.getThumbprint( file, factory.getFingerprint() );
 		return thumbprint;
 	}
 
 	public List<Long> getOffsets() {
 		if ( offsets != null ) return offsets;
-		offsets = HandprintUtils.getOffsets( file, fingerWindow );
+		offsets = HandprintUtils.getOffsets( file, factory.getWindowedFingerprint() );
 		return offsets;
 	}
 
 	public List<Long> getAllFingers() {
 		if ( chunks != null ) return chunks;
-		chunks = HandprintUtils.getChunks( file, finger, getOffsets() );
+		chunks = HandprintUtils.getChunks( file, factory.getFingerprint(), getOffsets() );
 		Collections.sort( chunks, Collections.reverseOrder() );
 		return chunks;
 	}
