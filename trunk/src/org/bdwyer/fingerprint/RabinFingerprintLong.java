@@ -26,8 +26,8 @@ public class RabinFingerprintLong extends AbstractFingerprint {
 	private final int degree;
 	private long fingerprint;
 
-	private final long[] pushTable = new long[512];
-	private final long[] popTable = new long[256];
+	protected final long[] pushTable = new long[512];
+	protected final long[] popTable = new long[256];
 	
 	public RabinFingerprintLong( Polynomial poly ){
 		this( poly, 0 );
@@ -72,22 +72,16 @@ public class RabinFingerprintLong extends AbstractFingerprint {
 	 * {@link RabinFingerprintPolynomial#pushByte}
 	 */
 	@Override
-	public synchronized RabinFingerprintLong pushByte( byte b ) {
-		long f = fingerprint;
-		int i = (int) ( f >> ( degree - 8 ) & 0x1FF );
-		f <<= 8;
-		f |= b & 0xFF;
-		f ^= pushTable[i];
-
-		fingerprint = f;
-		byteCount++;
+	public void pushByte( byte b ) {
+		int i = (int) ( fingerprint >> ( degree - 8 ) & 0x1FF );
+		fingerprint = ( ( fingerprint << 8 ) | ( b & 0xFF ) ) ^ pushTable[i];
 
 		if ( bytesPerWindow > 0 ) {
 			byteWindow.add( b );
-			if ( byteCount > bytesPerWindow ) popByte();
+			if ( byteWindow.isFull() ) popByte();
 		}
-		return this;
 	}
+	
 	/**
 	 * Removes the contribution of the first byte in the byte queue from the
 	 * fingerprint.
@@ -95,30 +89,23 @@ public class RabinFingerprintLong extends AbstractFingerprint {
 	 * {@link RabinFingerprintPolynomial#popByte}
 	 */
 	@Override
-	public synchronized RabinFingerprintLong popByte() {
-		long f = fingerprint;
+	public void popByte() {
 		byte b = byteWindow.poll();
-		f ^= popTable[(int) ( b & 0xFF )];
-
-		fingerprint = f;
-		byteCount--;
-
-		return this;
+		fingerprint ^= popTable[(int) ( b & 0xFF )];
 	}
 
 	@Override
-	public synchronized RabinFingerprintLong reset() {
+	public void reset() {
 		super.reset();
 		this.fingerprint = 0L;
-		return this;
 	}
 
 	@Override
-	public synchronized Polynomial getFingerprint() {
+	public Polynomial getFingerprint() {
 		return Polynomial.createFromLong( fingerprint );
 	}
 
-	public synchronized long getFingerprintLong() {
+	public long getFingerprintLong() {
 		return fingerprint;
 	}
 }

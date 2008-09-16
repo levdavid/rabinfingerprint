@@ -86,20 +86,18 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 	 * If we have passed overflowed our window, we pop a byte
 	 */
 	@Override
-	public synchronized RabinFingerprintPolynomial pushByte( byte b ) {
+	public synchronized void pushByte( byte b ) {
 		Polynomial f = fingerprint;
 		f = f.shiftLeft( byteShift );
 		f = f.or( Polynomial.createFromLong( b & 0xFFL ) );
 		f = f.mod( poly );
 
 		fingerprint = f;
-		byteCount++;
 
 		if ( bytesPerWindow > 0 ) {
 			byteWindow.add( b );
-			if ( byteCount > bytesPerWindow ) popByte();
+			if ( byteWindow.isFull() ) popByte();
 		}
-		return this;
 	}
 
 	/**
@@ -114,23 +112,19 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint {
 	 * in a k-bit number at the end of the calculation.
 	 */
 	@Override
-	public synchronized RabinFingerprintPolynomial popByte() {
+	public synchronized void popByte() {
 		byte b = byteWindow.poll();
 		Polynomial f = Polynomial.createFromLong( b & 0xFFL );
 		f = f.shiftLeft( windowShift );
 		f = f.mod( poly );
 
 		fingerprint = fingerprint.xor( f );
-		byteCount--;
-
-		return this;
 	}
 
 	@Override
-	public synchronized RabinFingerprintPolynomial reset() {
+	public synchronized void reset() {
 		super.reset();
 		this.fingerprint = new Polynomial();
-		return this;
 	}
 
 	@Override

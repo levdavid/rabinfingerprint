@@ -10,12 +10,38 @@ import org.bdwyer.polynomial.Polynomial;
 public class RabinFingerprintTest {
 
 	public static void main( String[] args ) throws Exception {
+		// testPolynomialsAndLongs();
 		// testAgainstMaple( true );
 		// testAgainstMaple( false );
 		// fingerprintFiles( true );
-		 fingerprintFiles( false );
+	    // fingerprintFiles( false );
 		// testWindowing( true );
 		// testWindowing( false );
+	}
+	
+	public static void testPolynomialsAndLongs() {
+
+		// generate random data
+		byte[] data = new byte[1024];
+		Random random = new Random();
+		random.nextBytes( data );
+
+		// generate random irreducible polynomial
+		Polynomial p = Polynomial.createIrreducible( 53 );
+
+		final Fingerprint< Polynomial > rabin0 = new RabinFingerprintPolynomial( p, 0 );
+		final Fingerprint< Polynomial > rabin1 = new RabinFingerprintLong( p, 0 );
+
+		rabin0.pushBytes( data );
+		rabin1.pushBytes( data );
+
+		if ( rabin0.getFingerprint().compareTo( rabin1.getFingerprint() ) != 0 ) {
+			System.out.println( "Incorrect fingerprint:" );
+			System.out.println( "\t" + rabin0.getFingerprint().toHexString() );
+			System.out.println( "\t" + rabin1.getFingerprint().toHexString() );
+		} else {
+			System.out.println( "A-OKAY!");
+		}
 	}
 	
 	public static void testWindowing( boolean usePolynomials ) {
@@ -78,7 +104,8 @@ public class RabinFingerprintTest {
 			}
 
 			// fingerprint
-			final Polynomial f = rabin.pushBytes( data ).getFingerprint();
+			rabin.pushBytes( data );
+			final Polynomial f = rabin.getFingerprint();
 
 			// compare with rabin's fingerprint function
 			StringBuffer str = new StringBuffer();
@@ -105,9 +132,11 @@ public class RabinFingerprintTest {
 		
 		// time fingerprints
 		System.out.println( "fingerprinting:" );
-		fingerprintFile( "1.mp3", rabin );
-		fingerprintFile( "2.mp3", rabin );
-		fingerprintFile( "3.mp3", rabin );
+		while(true){
+			fingerprintFile( "samples/1.mp3", rabin );
+			fingerprintFile( "samples/2.mp3", rabin );
+			fingerprintFile( "samples/3.mp3", rabin );
+		}
 	}
 
 	public static void fingerprintFile( String filename, Fingerprint<?> rabin ) throws Exception {

@@ -8,7 +8,8 @@ import org.bdwyer.polynomial.Polynomial;
 public class ChunkerTest {
 	
 	public static void main( String[] args ) throws Exception {
-		testChunkingFiles();
+		//testChunkingFiles();
+		testSpeed();
 	}
 
 	private static void testChunkingFiles() throws IOException {
@@ -40,6 +41,48 @@ public class ChunkerTest {
 		System.out.println( "1->2: " + HandprintUtils.countOverlap( hand1, hand2 ) + " (" + sim12 + "%)" );
 		System.out.println( "1->3: " + HandprintUtils.countOverlap( hand1, hand3 ) + " (" + sim13 + "%)" );
 		System.out.println( "1->4: " + HandprintUtils.countOverlap( hand1, hand4 ) + " (" + sim14 + "%)" );
+	}
+	
+	//  -agentlib:yjpagent
+	private static void testSpeed() throws IOException {
+
+		final Polynomial p = Polynomial.createIrreducible( 53 );
+		final File file = new File( "samples/1.mp3" );
+		final long size = file.length();
+		final double kb = (size / 1024);
+		System.out.println( "File Size: " + ( size / 1024 ) + " KB" );
+
+		final Stats statsThumb = new Stats();
+		final Stats statsHand = new Stats();
+		while ( true ) {
+			long start = System.currentTimeMillis();
+			HandPrint hand = new HandPrint( file, p );
+			hand.getThumb();
+			long endThumb = System.currentTimeMillis();
+			statsThumb.accumulate( endThumb - start );
+			
+			hand.getAllFingers();
+			long endHand = System.currentTimeMillis();
+			statsHand.accumulate( endHand - start );
+
+			System.out.println( "Average Thumb Speed " + (int) ( kb / statsThumb.average() * 1000.0 ) + " KB/s" );
+			System.out.println( "Average Hand Speed " + (int) ( kb / statsHand.average() * 1000.0 ) + " KB/s" );
+		}
+	}
+	
+	public static class Stats {
+		long count;
+		long accum;
+
+		public void accumulate( long value ) {
+			accum += value;
+			count++;
+		}
+
+		public long average() {
+			if ( count == 0 ) return 0;
+			return accum / count;
+		}
 	}
 
 }

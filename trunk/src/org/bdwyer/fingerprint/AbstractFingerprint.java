@@ -7,7 +7,6 @@ public abstract class AbstractFingerprint implements Fingerprint< Polynomial > {
 	protected final Polynomial poly;
 	protected final CircularByteQueue byteWindow;
 	protected final long bytesPerWindow;
-	protected long byteCount;
 
 	public AbstractFingerprint( Polynomial poly, long bytesPerWindow ) {
 		this.poly = poly;
@@ -16,38 +15,32 @@ public abstract class AbstractFingerprint implements Fingerprint< Polynomial > {
 		reset();
 	}
 
-	public AbstractFingerprint pushBytes( byte[] bytes ) {
+	public void pushBytes( final byte[] bytes ) {
 		for ( byte b : bytes ) {
 			pushByte( b );
 		}
-		return this;
 	}
 
-	public AbstractFingerprint pushBytes( byte[] bytes, int offset, int length ) {
-		for ( int i = offset; i < offset + length; i++ ) {
-			pushByte( bytes[i] );
+	public void pushBytes( final byte[] bytes, final int offset, final int length ) {
+		final int max = offset + length;
+		int i = offset;
+		while ( i < max ) {
+			pushByte( bytes[i++] );
 		}
-		return this;
 	}
 
-	public abstract AbstractFingerprint pushByte( byte b );
+	public abstract void pushByte( byte b );
 
-	public abstract AbstractFingerprint popByte();
+	public abstract void popByte();
 
 	public abstract Polynomial getFingerprint();
 
-	public synchronized AbstractFingerprint reset() {
-		this.byteCount = 0;
+	public synchronized void reset() {
 		this.byteWindow.clear();
-		return this;
 	}
 
 	public long getBytesPerWindow() {
 		return bytesPerWindow;
-	}
-
-	public synchronized long getBytesFingerprinted() {
-		return byteCount;
 	}
 
 	@Override
