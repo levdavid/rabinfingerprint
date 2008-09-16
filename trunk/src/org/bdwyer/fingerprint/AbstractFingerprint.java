@@ -5,14 +5,9 @@ import org.bdwyer.polynomial.Polynomial;
 public abstract class AbstractFingerprint implements Fingerprint< Polynomial > {
 
 	protected final Polynomial poly;
-	protected final CircularByteQueue byteWindow;
-	protected final long bytesPerWindow;
 
-	public AbstractFingerprint( Polynomial poly, long bytesPerWindow ) {
+	public AbstractFingerprint( Polynomial poly ) {
 		this.poly = poly;
-		this.bytesPerWindow = bytesPerWindow;
-		this.byteWindow = new CircularByteQueue( (int) bytesPerWindow + 1 );
-		reset();
 	}
 
 	public void pushBytes( final byte[] bytes ) {
@@ -31,17 +26,10 @@ public abstract class AbstractFingerprint implements Fingerprint< Polynomial > {
 
 	public abstract void pushByte( byte b );
 
-	public abstract void popByte();
-
+	public abstract void reset();
+	
 	public abstract Polynomial getFingerprint();
 
-	public synchronized void reset() {
-		this.byteWindow.clear();
-	}
-
-	public long getBytesPerWindow() {
-		return bytesPerWindow;
-	}
 
 	@Override
 	public String toString() {

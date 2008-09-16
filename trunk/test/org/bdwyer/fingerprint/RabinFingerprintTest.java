@@ -29,8 +29,8 @@ public class RabinFingerprintTest {
 		// generate random irreducible polynomial
 		Polynomial p = Polynomial.createIrreducible( 53 );
 
-		final Fingerprint< Polynomial > rabin0 = new RabinFingerprintPolynomial( p, 0 );
-		final Fingerprint< Polynomial > rabin1 = new RabinFingerprintLong( p, 0 );
+		final Fingerprint< Polynomial > rabin0 = new RabinFingerprintPolynomial( p );
+		final Fingerprint< Polynomial > rabin1 = new RabinFingerprintLong( p );
 
 		rabin0.pushBytes( data );
 		rabin1.pushBytes( data );
@@ -60,10 +60,10 @@ public class RabinFingerprintTest {
 			final Fingerprint< Polynomial > rabin0, rabin1;
 			if ( usePolynomials ) {
 				rabin0 = new RabinFingerprintPolynomial( p, window );
-				rabin1 = new RabinFingerprintPolynomial( p, 0 );
+				rabin1 = new RabinFingerprintPolynomial( p );
 			} else {
-				rabin0 = new RabinFingerprintLong( p, window );
-				rabin1 = new RabinFingerprintLong( p, 0 );
+				rabin0 = new RabinFingerprintLongWindowed( p, window );
+				rabin1 = new RabinFingerprintLong( p );
 			}
 			
 			for ( int j = 0; j < window*3; j++ ) {
@@ -79,6 +79,8 @@ public class RabinFingerprintTest {
 				System.out.println( "Incorrect fingerprint:" );
 				System.out.println( "\t" + rabin0.getFingerprint().toHexString() );
 				System.out.println( "\t" + rabin1.getFingerprint().toHexString() );
+			} else {
+				System.out.println( "Looks good.");
 			}
 
 		}
