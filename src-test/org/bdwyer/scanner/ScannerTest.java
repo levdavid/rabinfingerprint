@@ -6,17 +6,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.bdwyer.fingerprint.RabinFingerprintLong;
-import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
+import org.bdwyer.handprint.FingerFactory;
 import org.bdwyer.handprint.HandPrint;
 import org.bdwyer.handprint.HandprintUtils;
 import org.bdwyer.handprint.ChunkerTest.Stats;
-import org.bdwyer.handprint.HandprintUtils.HandprintFactory;
 import org.bdwyer.polynomial.Polynomial;
 
 public class ScannerTest {
@@ -35,7 +32,7 @@ public class ScannerTest {
 		final List< File > files = FileListing.getFileListing( dir );
 		final List< HandPrint > hands = new ArrayList< HandPrint >();
 
-		HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
+		FingerFactory factory = new FingerFactory( p, FingerFactory.WINDOW_SIZE );
 		
 		long start = System.currentTimeMillis();
 
@@ -44,7 +41,7 @@ public class ScannerTest {
 			HandPrint hand = new HandPrint( file, factory );
 			hands.add( hand );
 			System.out.println( "Thumbprinting " + file.toString() );
-			System.out.println( Long.toHexString( hand.getThumb() ).toUpperCase() );
+			System.out.println( Long.toHexString( hand.getPalm() ).toUpperCase() );
 		}
 
 		long end = System.currentTimeMillis();
@@ -59,7 +56,7 @@ public class ScannerTest {
 		final List< File > files = FileListing.getFileListing( dir );
 
 		final Polynomial p = Polynomial.createIrreducible( 53 );
-		HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
+		FingerFactory factory = new FingerFactory( p, FingerFactory.WINDOW_SIZE );
 		
 		final Stats statsThumb = new Stats();
 		final Stats statsHand = new Stats();
@@ -71,7 +68,7 @@ public class ScannerTest {
 			final double kb = ( size / 1024 );
 			final long start = System.currentTimeMillis();
 			final HandPrint hand = new HandPrint( file, factory );
-			hand.getThumb();
+			hand.getPalm();
 			final long endThumb = System.currentTimeMillis();
 			statsThumb.accumulate( kb / ( endThumb - start ) * 1000.0 );
 			System.out.println( "Average Thumb Speed " + (int) ( statsThumb.average() ) + " KB/s" );
@@ -99,7 +96,7 @@ public class ScannerTest {
 		public void run() {
 			final double kb = ( hand.getFile().length() / 1024 );
 			final long start = System.currentTimeMillis();
-			hand.getThumb();
+			hand.getPalm();
 			final long endThumb = System.currentTimeMillis();
 			sizeStats.accumulate( kb );
 			timeStats.accumulate( ( endThumb - start ) / 1000.0 );
@@ -115,7 +112,7 @@ public class ScannerTest {
 		final List< File > files = FileListing.getFileListing( dir );
 
 		final Polynomial p = Polynomial.createIrreducible( 53 );
-		final HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
+		final FingerFactory factory = new FingerFactory( p, FingerFactory.WINDOW_SIZE );
 		
 		final List< HandPrint > hands = new ArrayList<HandPrint>();
 		for ( File file : files ) {

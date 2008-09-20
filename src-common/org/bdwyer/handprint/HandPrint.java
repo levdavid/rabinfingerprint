@@ -1,60 +1,53 @@
 package org.bdwyer.handprint;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.bdwyer.handprint.HandprintUtils.HandprintFactory;
+import org.bdwyer.datastructures.BidiSortedMap;
+import org.bdwyer.datastructures.Interval;
 
 public class HandPrint {
 	
 	private static final int FINGERS = 10;
 
 	protected final File file;
-	protected final HandprintFactory factory;
+	protected final FingerFactory factory;
 
-	protected Long thumbprint;
-	protected List< Long > offsets;
-	protected List< Long > chunks;
-	protected List< Long > hand;
+	protected Long palm;
+	protected BidiSortedMap<Long, Interval> fingers;
+	protected BidiSortedMap<Long, Interval> hand;
 
-	public HandPrint( File file, HandprintFactory factory ) {
+	public HandPrint( File file, FingerFactory factory ) {
 		this.file = file;
 		this.factory = factory;
 	}
 	
 	public void buildAll(){
-		getThumb();
-		getOffsets();
+		getPalm();
 		getAllFingers();
 		getHandFingers();
 	}
 
-	public Long getThumb() {
-		if ( thumbprint != null ) return thumbprint;
-		thumbprint = HandprintUtils.getThumbprint( file, factory.getFingerprint() );
-		return thumbprint;
+	public Long getPalm() {
+		if ( palm != null ) return palm;
+		palm = factory.getPalm( file );
+		return palm;
 	}
 
-	public List<Long> getOffsets() {
-		if ( offsets != null ) return offsets;
-		offsets = HandprintUtils.getOffsets( file, factory.getWindowedFingerprint() );
-		return offsets;
-	}
-
-	public List<Long> getAllFingers() {
-		if ( chunks != null ) return chunks;
-		chunks = HandprintUtils.getChunks( file, factory.getFingerprint(), getOffsets() );
-		Collections.sort( chunks, Collections.reverseOrder() );
-		return chunks;
+	public BidiSortedMap< Long, Interval > getAllFingers() {
+		if ( fingers != null ) return fingers;
+		fingers = factory.getAllFingers( file );
+		return fingers;
 	}
 	
-	public List<Long> getHandFingers() {
+	public BidiSortedMap< Long, Interval > getHandFingers() {
 		if ( hand != null ) return hand;
-		hand = new ArrayList<Long>( FINGERS );
-		for ( int i = 0; i < FINGERS && i < getAllFingers().size(); i++ ) {
-			hand.add( getAllFingers().get( i ) );
+		hand = new BidiSortedMap< Long, Interval >();
+		int i = 0;
+		for ( java.util.Map.Entry< Long, Interval > entry : getAllFingers().entrySet() ) {
+			if ( i >= FINGERS ) break;
+			hand.put( entry.getKey(), entry.getValue() );
+			i++;
 		}
 		return hand;
 	}

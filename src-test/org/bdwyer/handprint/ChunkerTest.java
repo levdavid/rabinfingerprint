@@ -3,31 +3,28 @@ package org.bdwyer.handprint;
 import java.io.File;
 import java.io.IOException;
 
-import org.bdwyer.fingerprint.RabinFingerprintLong;
-import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
-import org.bdwyer.handprint.HandprintUtils.HandprintFactory;
 import org.bdwyer.polynomial.Polynomial;
 
 public class ChunkerTest {
 	
 	public static void main( String[] args ) throws Exception {
-		// testChunkingFiles();
-		testSpeed();
+		//testChunkingFiles();
+		//testSpeed();
 	}
 
 	private static void testChunkingFiles() throws IOException {
 		Polynomial p = Polynomial.createIrreducible( 53 );
-		HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
+		FingerFactory factory = new FingerFactory( p, FingerFactory.WINDOW_SIZE );
 		
 		HandPrint hand1 = new HandPrint( new File( "samples/1.mp3" ), factory );
 		HandPrint hand2 = new HandPrint( new File( "samples/2.mp3" ), factory );
 		HandPrint hand3 = new HandPrint( new File( "samples/3.mp3" ), factory );
 		HandPrint hand4 = new HandPrint( new File( "samples/4.mp3" ), factory );
 		
-		System.out.println( "thumb 1: " + hand1.getThumb() );
-		System.out.println( "thumb 2: " + hand2.getThumb() );
-		System.out.println( "thumb 3: " + hand3.getThumb() );
-		System.out.println( "thumb 4: " + hand4.getThumb() );
+		System.out.println( "thumb 1: " + hand1.getPalm() );
+		System.out.println( "thumb 2: " + hand2.getPalm() );
+		System.out.println( "thumb 3: " + hand3.getPalm() );
+		System.out.println( "thumb 4: " + hand4.getPalm() );
 
 		System.out.println( "|chunks| 1: " + hand1.getFingerCount() );
 		System.out.println( "|chunks| 2: " + hand2.getFingerCount() );
@@ -52,7 +49,7 @@ public class ChunkerTest {
 	private static void testSpeed() throws IOException {
 
 		final Polynomial p = Polynomial.createIrreducible( 53 );
-		final HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
+		final FingerFactory factory = new FingerFactory( p, FingerFactory.WINDOW_SIZE );
 		
 		final File file = new File( "samples/1.mp3" );
 		final long size = file.length();
@@ -64,7 +61,7 @@ public class ChunkerTest {
 		while ( true ) {
 			long start = System.currentTimeMillis();
 			HandPrint hand = new HandPrint( file, factory );
-			hand.getThumb();
+			hand.getPalm();
 			long endThumb = System.currentTimeMillis();
 			statsThumb.accumulate( endThumb - start );
 			

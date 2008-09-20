@@ -2,6 +2,7 @@ package org.bdwyer.fingerprint;
 
 import java.math.BigInteger;
 
+import org.bdwyer.datastructures.CircularByteQueue;
 import org.bdwyer.fingerprint.Fingerprint.WindowedFingerprint;
 import org.bdwyer.polynomial.Polynomial;
 

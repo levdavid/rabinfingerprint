@@ -10,11 +10,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.bdwyer.fingerprint.RabinFingerprintLong;
-import org.bdwyer.fingerprint.RabinFingerprintLongWindowed;
+import org.bdwyer.handprint.FingerFactory;
 import org.bdwyer.handprint.HandPrint;
 import org.bdwyer.handprint.HandprintUtils;
-import org.bdwyer.handprint.HandprintUtils.HandprintFactory;
 import org.bdwyer.polynomial.Polynomial;
 
 public class MatchModel {
@@ -141,7 +139,7 @@ public class MatchModel {
 
 			public void run() {
 				for ( HandPrint hand : hands ) {
-					map.put( hand.getThumb(), hand );
+					map.put( hand.getPalm(), hand );
 					System.out.print( "." );
 					System.out.flush();
 				}
@@ -212,7 +210,7 @@ public class MatchModel {
 
 			public void run() {
 				for ( HandPrint hand : hands ) {
-					for ( Long finger : hand.getHandFingers() ) {
+					for ( Long finger : hand.getHandFingers().keySet() ) {
 						map.put( finger, hand );
 					}
 					System.out.print( "." );
@@ -256,7 +254,7 @@ public class MatchModel {
 		final File dir = new File( path );
 		final List< File > files = FileListing.getFileListing( dir );
 		final List< HandPrint > hands = new ArrayList< HandPrint >();
-		final HandprintUtils.HandprintFactory factory = new HandprintUtils.HandprintFactory( p, HandprintUtils.WINDOW_SIZE );
+		final FingerFactory factory = new FingerFactory( p, FingerFactory.WINDOW_SIZE );
 
 		for ( File file : files ) {
 			if ( !file.isFile() ) continue;

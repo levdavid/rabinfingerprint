@@ -2,6 +2,7 @@ package org.bdwyer.fingerprint;
 
 import java.math.BigInteger;
 
+import org.bdwyer.datastructures.CircularByteQueue;
 import org.bdwyer.fingerprint.Fingerprint.WindowedFingerprint;
 import org.bdwyer.polynomial.Polynomial;
 
@@ -10,13 +11,21 @@ public class RabinFingerprintLongWindowed extends RabinFingerprintLong implement
 	protected final CircularByteQueue byteWindow;
 	protected final long bytesPerWindow;
 	
-	protected final long[] popTable = new long[256];
+	protected final long[] popTable;
 	
 	public RabinFingerprintLongWindowed( Polynomial poly, long bytesPerWindow ) {
 		super( poly );
 		this.bytesPerWindow = bytesPerWindow;
 		this.byteWindow = new CircularByteQueue( (int) bytesPerWindow + 1 );
+		this.popTable = new long[256];
 		precomputePopTable();
+	}
+	
+	public RabinFingerprintLongWindowed( RabinFingerprintLongWindowed that ) {
+		super( that );
+		this.bytesPerWindow = that.bytesPerWindow;
+		this.byteWindow = new CircularByteQueue( (int) bytesPerWindow + 1 );
+		this.popTable = that.popTable;
 	}
 	
 	private void precomputePopTable() {

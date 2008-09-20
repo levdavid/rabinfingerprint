@@ -17,9 +17,4 @@ public interface Fingerprint<T> {
 	public static interface WindowedFingerprint< T > extends Fingerprint< T > {
 		public void popByte();
 	}
-	
-	public static interface FingerprintFactory< T > {
-		public Fingerprint< T > getFingerprint();
-		public WindowedFingerprint< T > getWindowedFingerprint();
-	}
 }
