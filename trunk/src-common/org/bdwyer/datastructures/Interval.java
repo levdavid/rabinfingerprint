@@ -14,8 +14,8 @@ import java.util.Comparator;
  */
 public class Interval implements Comparable< Interval > {
 
-	private final Integer start;
-	private final Integer end;
+	private final Long start;
+	private final Long end;
 	
 	/**
 	 * The default comparator. Sorts first be the start index, then by the end
@@ -47,12 +47,12 @@ public class Interval implements Comparable< Interval > {
 		}
 	};
 	
-	public static Interval createUndirected( Integer start, Integer end ) {
+	public static Interval createUndirected( Long start, Long end ) {
 		if ( start.compareTo( end ) > 0 ) return new Interval( end, start );
 		return new Interval( start, end );
 	}
 
-	public Interval( Integer start, Integer end ) {
+	public Interval( Long start, Long end ) {
 		if ( start == null || end == null ) throw new IllegalArgumentException( "Interval indeces cannot be null" );
 		if ( start.compareTo( end ) > 0 ) throw new IllegalArgumentException( "Interval indeces out of order" );
 
@@ -63,15 +63,19 @@ public class Interval implements Comparable< Interval > {
 	/**
 	 * Returns the inclusive start offset
 	 */
-	public Integer getStart() {
+	public Long getStart() {
 		return start;
 	}
 
 	/**
 	 * Returns the exclusive end offset
 	 */
-	public Integer getEnd() {
+	public Long getEnd() {
 		return end;
+	}
+	
+	public Long getSize() {
+		return end - start;
 	}
 	
 	/**
@@ -79,8 +83,8 @@ public class Interval implements Comparable< Interval > {
 	 * intervals do not overlap, null is returned.
 	 */
 	public Interval intersection( Interval interval ) {
-		Integer istart = interval.getStart();
-		Integer iend = interval.getEnd();
+		Long istart = interval.getStart();
+		Long iend = interval.getEnd();
 		if ( istart >= end || start >= iend ) return null; // no overlap
 		return new Interval( Math.max( start, istart ), Math.min( end, iend ) );
 	}
@@ -91,8 +95,8 @@ public class Interval implements Comparable< Interval > {
 	 * either interval can be included in resulting interval.
 	 */
 	public Interval union( Interval interval ) {
-		Integer istart = interval.getStart();
-		Integer iend = interval.getEnd();
+		Long istart = interval.getStart();
+		Long iend = interval.getEnd();
 		return new Interval( Math.min( start, istart ), Math.max( end, iend ) );
 	}
 

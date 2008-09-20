@@ -1,5 +1,6 @@
 package org.bdwyer.handprint;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,19 +8,25 @@ import java.io.IOException;
 
 import org.bdwyer.handprint.HandprintUtils.HandprintException;
 
-public abstract class StreamWrapper {
+public class StreamWrapper {
 
-	public static FileInputStream getStream( File file ){
-		FileInputStream stream;
+	private final BufferedInputStream stream;
+
+	public StreamWrapper( File file ) {
+		this.stream = createStream( file );
+	}
+
+	private BufferedInputStream createStream( File file ) {
+		BufferedInputStream stream;
 		try {
-			stream = new FileInputStream( file );
+			stream = new BufferedInputStream( new FileInputStream( file ) );
 		} catch ( FileNotFoundException e ) {
 			throw new HandprintException( "File not found", e );
 		}
 		return stream;
 	}
-	
-	public static int getBytes( final FileInputStream stream, byte[] buffer ) {
+
+	public int getBytes( byte[] buffer ) {
 		int bytesRead;
 		try {
 			bytesRead = stream.read( buffer );
@@ -28,8 +35,8 @@ public abstract class StreamWrapper {
 		}
 		return bytesRead;
 	}
-	
-	public static void closeStream( final FileInputStream stream ) {
+
+	public void close() {
 		try {
 			stream.close();
 		} catch ( IOException e ) {

@@ -1,4 +1,4 @@
-package org.bdwyer.fingerprint;
+package org.bdwyer.datastructures;
 
 /**
  * A fast, but dangerous circular byte queue. There is no enforcement that the

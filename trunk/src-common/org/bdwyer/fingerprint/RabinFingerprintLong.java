@@ -27,13 +27,23 @@ public class RabinFingerprintLong extends AbstractFingerprint {
 	protected final int shift;
 	protected long fingerprint;
 
-	protected final long[] pushTable = new long[512];
+	protected final long[] pushTable;
 	
 	public RabinFingerprintLong( Polynomial poly ) {
 		super( poly );
 		this.degree = poly.degree().intValue();
 		this.shift = degree - 8;
+		this.fingerprint = 0;
+		this.pushTable = new long[512];
 		precomputePushTable();
+	}
+	
+	public RabinFingerprintLong( RabinFingerprintLong that ){
+		super( that.poly );
+		this.degree = that.degree;
+		this.shift = that.shift;
+		this.pushTable = that.pushTable;
+		this.fingerprint = 0;
 	}
 
 	/**

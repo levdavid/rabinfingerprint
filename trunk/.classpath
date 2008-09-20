@@ -2,6 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src-common"/>
 	<classpathentry kind="src" path="src-test"/>
+	<classpathentry kind="src" path="src-ui"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/collections-generic-4.01/collections-generic-4.01.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
