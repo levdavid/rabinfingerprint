@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 
 import org.bdwyer.handprint.FingerFactory;
 import org.bdwyer.handprint.HandPrint;
-import org.bdwyer.handprint.HandprintUtils;
 import org.bdwyer.handprint.ChunkerTest.Stats;
 import org.bdwyer.polynomial.Polynomial;
 

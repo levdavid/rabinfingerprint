@@ -65,26 +65,26 @@ import org.bdwyer.polynomial.Polynomial;
  * http://citeseer.ist.psu.edu/broder93some.html
  * 
  */
-public class RabinFingerprintPolynomial extends AbstractFingerprint implements WindowedFingerprint< Polynomial > {
+public class RabinFingerprintPolynomial extends AbstractFingerprint implements WindowedFingerprint<Polynomial> {
 
 	private final BigInteger byteShift;
 	private final BigInteger windowShift;
-	
+
 	private final CircularByteQueue byteWindow;
 	private final long bytesPerWindow;
 
 	private Polynomial fingerprint;
 
-	public RabinFingerprintPolynomial( Polynomial poly ) {
-		this( poly, 0 );
+	public RabinFingerprintPolynomial(Polynomial poly) {
+		this(poly, 0);
 	}
 
-	public RabinFingerprintPolynomial( Polynomial poly, long bytesPerWindow ) {
-		super( poly );
-		this.byteShift = BigInteger.valueOf( 8 );
-		this.windowShift = BigInteger.valueOf( bytesPerWindow * 8 );
+	public RabinFingerprintPolynomial(Polynomial poly, long bytesPerWindow) {
+		super(poly);
+		this.byteShift = BigInteger.valueOf(8);
+		this.windowShift = BigInteger.valueOf(bytesPerWindow * 8);
 		this.bytesPerWindow = bytesPerWindow;
-		this.byteWindow = new CircularByteQueue( (int) bytesPerWindow + 1 );
+		this.byteWindow = new CircularByteQueue((int) bytesPerWindow + 1);
 		this.fingerprint = new Polynomial();
 	}
 
@@ -94,17 +94,17 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint implements W
 	 * If we have passed overflowed our window, we pop a byte
 	 */
 	@Override
-	public synchronized void pushByte( byte b ) {
+	public synchronized void pushByte(byte b) {
 		Polynomial f = fingerprint;
-		f = f.shiftLeft( byteShift );
-		f = f.or( Polynomial.createFromLong( b & 0xFFL ) );
-		f = f.mod( poly );
+		f = f.shiftLeft(byteShift);
+		f = f.or(Polynomial.createFromLong(b & 0xFFL));
+		f = f.mod(poly);
 
 		fingerprint = f;
 
-		if ( bytesPerWindow > 0 ) {
-			byteWindow.add( b );
-			if ( byteWindow.isFull() ) popByte();
+		if (bytesPerWindow > 0) {
+			byteWindow.add(b);
+			if (byteWindow.isFull()) popByte();
 		}
 	}
 
@@ -121,11 +121,11 @@ public class RabinFingerprintPolynomial extends AbstractFingerprint implements W
 	 */
 	public synchronized void popByte() {
 		byte b = byteWindow.poll();
-		Polynomial f = Polynomial.createFromLong( b & 0xFFL );
-		f = f.shiftLeft( windowShift );
-		f = f.mod( poly );
-		
-		fingerprint = fingerprint.xor( f );
+		Polynomial f = Polynomial.createFromLong(b & 0xFFL);
+		f = f.shiftLeft(windowShift);
+		f = f.mod(poly);
+
+		fingerprint = fingerprint.xor(f);
 	}
 
 	@Override

@@ -1,13 +1,6 @@
 package org.bdwyer.handprint;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.Iterator;
-
-import org.bdwyer.datastructures.BidiSortedMap;
-import org.bdwyer.datastructures.Interval;
-import org.bdwyer.fingerprint.RabinFingerprintLong;
 
 public class HandprintUtils {
 

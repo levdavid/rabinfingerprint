@@ -75,7 +75,7 @@ public class Polynomial implements Arithmetic< Polynomial >, Comparable< Polynom
 	 */
 	public static Polynomial createRandom( int degree ) {
 		Random random = new Random();
-		byte[] bytes = new byte[(int) ( degree / 8 ) + 1 ];
+		byte[] bytes = new byte[( degree / 8 ) + 1 ];
 		random.nextBytes( bytes );
 		return createFromBytes( bytes, degree );
 	}
