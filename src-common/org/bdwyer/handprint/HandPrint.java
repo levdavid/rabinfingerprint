@@ -1,7 +1,6 @@
 package org.bdwyer.handprint;
 
 import java.io.File;
-import java.util.List;
 
 import org.bdwyer.datastructures.BidiSortedMap;
 import org.bdwyer.datastructures.Interval;
