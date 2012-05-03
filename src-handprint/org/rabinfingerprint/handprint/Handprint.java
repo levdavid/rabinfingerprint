@@ -1,24 +1,31 @@
 package org.rabinfingerprint.handprint;
 
-import java.io.File;
-import java.util.Map.Entry;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Comparator;
+import java.util.TreeSet;
 
-import org.rabinfingerprint.datastructures.BidiSortedMap;
 import org.rabinfingerprint.datastructures.Interval;
+import org.rabinfingerprint.handprint.Handprints.HandprintException;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 public class Handprint {
-	private static final int FINGERS = 10;
+	private final InputStream stream;
+	private final FingerFactory factory;
+	private final int fingersPerHand;
 
-	protected final File file;
-	protected final FingerFactory factory;
+	private Long palm;
+	private Multimap<Long, Interval> fingers;
+	private Multimap<Long, Interval> hand;
 
-	protected Long palm;
-	protected BidiSortedMap<Long, Interval> fingers;
-	protected BidiSortedMap<Long, Interval> hand;
-
-	public Handprint(File file, FingerFactory factory) {
-		this.file = file;
+	public Handprint(InputStream stream, int fingersPerHand, FingerFactory factory) {
+		this.stream = stream;
 		this.factory = factory;
+		this.fingersPerHand = fingersPerHand;
 	}
 
 	public void buildAll() {
@@ -30,27 +37,41 @@ public class Handprint {
 	public Long getPalm() {
 		if (palm != null)
 			return palm;
-		palm = factory.getPalm(file);
+		try {
+			palm = factory.getPalm(stream);
+		} catch (IOException e) {
+			throw new HandprintException("Error while computing fingerprints", e);
+		}
 		return palm;
 	}
 
-	public BidiSortedMap<Long, Interval> getAllFingers() {
+	public Multimap<Long, Interval> getAllFingers() {
 		if (fingers != null)
 			return fingers;
-		fingers = factory.getAllFingers(file);
+		try {
+			fingers = factory.getAllFingers(stream);
+		} catch (IOException e) {
+			throw new HandprintException("Error while computing fingerprints", e);
+		}
 		return fingers;
 	}
+	
+	public static final Comparator<Long> REVERSE_LONG_SORT = new Comparator<Long>() {
+		@Override
+		public int compare(Long o1, Long o2) {
+			return o2.compareTo(o1);
+		}
+	};
 
-	public BidiSortedMap<Long, Interval> getHandFingers() {
+	public Multimap<Long, Interval> getHandFingers() {
 		if (hand != null)
 			return hand;
-		hand = new BidiSortedMap<Long, Interval>();
-		int i = 0;
-		for (Entry<Long, Interval> entry : getAllFingers().entrySet()) {
-			if (i >= FINGERS)
-				break;
-			hand.put(entry.getKey(), entry.getValue());
-			i++;
+		hand = ArrayListMultimap.create();
+		Multimap<Long, Interval> all = getAllFingers();
+		TreeSet<Long> keys = Sets.newTreeSet(REVERSE_LONG_SORT);
+		keys.addAll(all.keySet());
+		for (Long key : Iterables.limit(keys, fingersPerHand)) {
+			hand.putAll(key, all.get(key));
 		}
 		return hand;
 	}
@@ -59,8 +80,16 @@ public class Handprint {
 		return getAllFingers().size();
 	}
 
-	public File getFile() {
-		return file;
+	public int getIntersectingFingerCount(Handprint other) {
+		return Sets.intersection(getAllFingers().keySet(), other.getAllFingers().keySet()).size();
+	}
+
+	public double getSimilarity(Handprint other) {
+		int maxFingers = Math.max(getFingerCount(), other.getFingerCount());
+		if (maxFingers == 0) {
+			return 1.0;
+		}
+		return (double) getIntersectingFingerCount(other) / (double) maxFingers;
 	}
 
 	@Override

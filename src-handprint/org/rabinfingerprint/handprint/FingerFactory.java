@@ -1,48 +1,52 @@
 package org.rabinfingerprint.handprint;
 
-import java.io.File;
-import java.util.Comparator;
+import java.io.IOException;
+import java.io.InputStream;
 
-import org.rabinfingerprint.datastructures.BidiSortedMap;
 import org.rabinfingerprint.datastructures.Interval;
 import org.rabinfingerprint.fingerprint.RabinFingerprintLong;
 import org.rabinfingerprint.fingerprint.RabinFingerprintLongWindowed;
 import org.rabinfingerprint.polynomial.Polynomial;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.io.ByteStreams;
+
 public class FingerFactory {
-	// TODO make these configurable, but default
-	public final static long WINDOW_SIZE = 8;
-	public final static int BUFFER_SIZE = 65536;
-	private final static long CHUNK_BOUNDARY = 0xFFF;
-	private final static long CHUNK_PATTERN = 0xABC;
+	public static interface BoundaryDetectorStrategy{
+		public boolean isBoundary(RabinFingerprintLong fingerprint);
+	}
+	
+	public static class ByteMaskBoundaryDetectoryStrategy implements BoundaryDetectorStrategy {
+		private final long chunkBoundaryMask;
+		private final long chunkPattern;
 
-	private final static Comparator<Long> LONG_REVERSE_SORT = new Comparator<Long>() {
-		public int compare(Long o1, Long o2) {
-			return o2.compareTo(o1);
+		public ByteMaskBoundaryDetectoryStrategy(long chunkBoundaryMask, long chunkPattern) {
+			this.chunkBoundaryMask = chunkBoundaryMask;
+			this.chunkPattern = chunkPattern;
 		}
-	};
 
-	private final static Comparator<Interval> INTERVAL_SORT = new Comparator<Interval>() {
-		public int compare(Interval o1, Interval o2) {
-			return o1.compareTo(o2);
+		@Override
+		public boolean isBoundary(RabinFingerprintLong fingerprint) {
+			return (fingerprint.getFingerprintLong() & chunkBoundaryMask) == chunkPattern;
 		}
-	};
-
+	}
+	
 	private final RabinFingerprintLong finger;
 	private final RabinFingerprintLongWindowed fingerWindow;
+	private final BoundaryDetectorStrategy boundaryDetector;
 
-	public FingerFactory(Polynomial p, long bytesPerWindow) {
+	public FingerFactory(Polynomial p, long bytesPerWindow, BoundaryDetectorStrategy boundaryDetector) {
 		this.finger = new RabinFingerprintLong(p);
 		this.fingerWindow = new RabinFingerprintLongWindowed(p, bytesPerWindow);
+		this.boundaryDetector = boundaryDetector;
 	}
 
-	protected RabinFingerprintLong getFingerprint() {
-		// prevent leaking state
+	private RabinFingerprintLong newFingerprint() {
 		return new RabinFingerprintLong(finger);
 	}
 
-	protected RabinFingerprintLongWindowed getWindowedFingerprint() {
-		// prevent leaking state
+	private RabinFingerprintLongWindowed newWindowedFingerprint() {
 		return new RabinFingerprintLongWindowed(fingerWindow);
 	}
 
@@ -56,60 +60,48 @@ public class FingerFactory {
 	 * print will be able to find all the parts that are similar in a very
 	 * efficient manner.
 	 */
-	public BidiSortedMap<Long, Interval> getAllFingers(File file) {
-		// init structures
-		final BidiSortedMap<Long, Interval> chunks = new BidiSortedMap<Long, Interval>(LONG_REVERSE_SORT, INTERVAL_SORT);
-		final StreamWrapper stream = new StreamWrapper(file);
-		final byte[] buffer = new byte[BUFFER_SIZE];
-
+	public Multimap<Long, Interval> getAllFingers(InputStream is) throws IOException {
 		// windowing fingerprinter for finding chunk boundaries. this is only
 		// reset at the beginning of the file
-		final RabinFingerprintLong window = getWindowedFingerprint();
+		final RabinFingerprintLong window = newWindowedFingerprint();
 
 		// fingerprinter for chunks. this is reset after each chunk
-		final RabinFingerprintLong finger = getFingerprint();
+		final RabinFingerprintLong finger = newFingerprint();
 
-		// init counters
+		// counters
 		long chunkStart = 0;
 		long chunkEnd = 0;
-		int bytesRead;
 
 		/*
-		 * buffer-read through file one byte at a time. we have to use this
-		 * granularity to ensure that, for example, a one byte offset at the
-		 * beginning of the file won't effect the chunk boundaries
+		 * fingerprint one byte at a time. we have to use this granularity to
+		 * ensure that, for example, a one byte offset at the beginning of the
+		 * file won't effect the chunk boundaries
 		 */
-		while ((bytesRead = stream.getBytes(buffer)) >= 0) {
-			for (int i = 0; i < bytesRead; i++) {
-				// push byte into fingerprints
-				window.pushByte(buffer[i]);
-				finger.pushByte(buffer[i]);
-				chunkEnd++;
+		final Multimap<Long, Interval> chunks = ArrayListMultimap.create();
+		is.reset();
+		for (byte b : ByteStreams.toByteArray(is)) {
+			// push byte into fingerprints
+			window.pushByte(b);
+			finger.pushByte(b);
+			chunkEnd++;
 
-				/*
-				 * if we've reached a boundary (which we will at some
-				 * probability based on the boundary pattern and the size of the
-				 * fingerprint window), we store the current chunk fingerprint
-				 * and reset the chunk fingerprinter.
-				 */
-				if ((window.getFingerprintLong() & CHUNK_BOUNDARY) == CHUNK_PATTERN) {
-					Interval interval = new Interval(new Long(chunkStart), new Long(chunkEnd));
-					chunks.put(finger.getFingerprintLong(), interval);
-					finger.reset();
-					// store last chunk offset
-					chunkStart = chunkEnd;
-				}
+			/*
+			 * if we've reached a boundary (which we will at some probability
+			 * based on the boundary pattern and the size of the fingerprint
+			 * window), we store the current chunk fingerprint and reset the
+			 * chunk fingerprinter.
+			 */
+			if (boundaryDetector.isBoundary(window)) {
+				chunks.put(finger.getFingerprintLong(), new Interval(chunkStart, chunkEnd));
+				finger.reset();
+				
+				// store last chunk offset
+				chunkStart = chunkEnd;
 			}
 		}
 
-		// close stream
-		stream.close();
-
 		// final chunk
-		Interval interval = new Interval(new Long(chunkStart), new Long(chunkEnd));
-		chunks.put(finger.getFingerprintLong(), interval);
-		finger.reset();
-
+		chunks.put(finger.getFingerprintLong(), new Interval(chunkStart, chunkEnd));
 		return chunks;
 	}
 
@@ -119,15 +111,10 @@ public class FingerFactory {
 	 * We use the term "Palm" to describe the fingerprint of the entire file,
 	 * instead of chunks, which are referred to as the file's "Fingers".
 	 */
-	public long getPalm(File file) {
-		final StreamWrapper stream = new StreamWrapper(file);
-		final byte[] buffer = new byte[BUFFER_SIZE];
-		final RabinFingerprintLong finger = getFingerprint();
-		int bytesRead;
-		while ((bytesRead = stream.getBytes(buffer)) >= 0) {
-			finger.pushBytes(buffer, 0, bytesRead);
-		}
-		stream.close();
+	public long getPalm(InputStream is) throws IOException {
+		final RabinFingerprintLong finger = newFingerprint();
+		is.reset();
+		finger.pushBytes(ByteStreams.toByteArray(is));
 		return finger.getFingerprintLong();
 	}
 }
