@@ -1,55 +1,53 @@
 package org.rabinfingerprint.handprint;
 
-import java.util.Iterator;
+import java.io.InputStream;
+
+import org.rabinfingerprint.handprint.FingerFactory.ByteMaskBoundaryDetectoryStrategy;
+import org.rabinfingerprint.polynomial.Polynomial;
 
 public class Handprints {
-
-	@SuppressWarnings( "serial" )
+	@SuppressWarnings("serial")
 	public static class HandprintException extends RuntimeException {
-		public HandprintException( String msg, Throwable wrapped ) {
-			super( msg, wrapped );
-		}
-	}
-
-	/**
-	 * Assumes chunk lists are reverse sorted
-	 */
-	public static int countOverlap( Handprint ha, Handprint hb ) {
-		int matches = 0;
-
-		final Iterator<Long> ia = ha.fingers.keyList().iterator();
-		final Iterator<Long> ib = hb.fingers.keyList().iterator();
-
-		if ( ia.hasNext() == false || ib.hasNext() == false ) return matches;
-
-		Long ac = ia.next();
-		Long bc = ib.next();
-		int cmp = ac.compareTo( bc );
-
-		while ( true ) {
-			while ( cmp > 0 ) {
-				if ( ia.hasNext() == false ) return matches;
-				ac = ia.next();
-				cmp = ac.compareTo( bc );
-			}
-			while ( cmp < 0 ) {
-				if ( ib.hasNext() == false ) return matches;
-				bc = ib.next();
-				cmp = ac.compareTo( bc );
-			}
-			while ( cmp == 0 ) {
-				matches++;
-				if ( ia.hasNext() == false || ib.hasNext() == false ) return matches;
-				ac = ia.next();
-				bc = ib.next();
-				cmp = ac.compareTo( bc );
-			}
+		public HandprintException(String msg, Throwable wrapped) {
+			super(msg, wrapped);
 		}
 	}
 	
-	public static double getSimilarity( Handprint ha, Handprint hb ) {
-		return (double) Handprints.countOverlap( ha, hb ) / (double) Math.max( ha.getFingerCount(), hb.getFingerCount() );
+	public static HandPrintFactory newFactory(Polynomial p) {
+		return new HandPrintFactory(p);
 	}
 
+	public static class HandPrintFactory {
+		private final Polynomial p;
+		private int fingersPerHand = 10;
+		private long bytesPerWindow = 8;
+		private long chunkBoundaryMask = 0xFFF;
+		private long chunkPattern = 0xABC;
 
+		public HandPrintFactory(Polynomial p) {
+			this.p = p;
+		}
+
+		public HandPrintFactory bytesPerWindow(long bytesPerWindow) {
+			this.bytesPerWindow = bytesPerWindow;
+			return this;
+		}
+
+		public HandPrintFactory chunkBoundaryMask(long chunkBoundaryMask) {
+			this.chunkBoundaryMask = chunkBoundaryMask;
+			return this;
+		}
+
+		public HandPrintFactory chunkPattern(long chunkPattern) {
+			this.chunkPattern = chunkPattern;
+			return this;
+		}
+		
+		public Handprint newHandprint(InputStream is){
+			return new Handprint(is,
+					fingersPerHand,
+							new FingerFactory(p, bytesPerWindow,
+									new ByteMaskBoundaryDetectoryStrategy(chunkBoundaryMask, chunkPattern)));
+		}
+	}
 }
